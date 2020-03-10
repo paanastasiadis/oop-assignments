@@ -10,6 +10,10 @@ public class RGBPixel {
 
     }
 
+    public RGBPixel(RGBPixel pixel) {
+        this.pixel = pixel.pixel;
+    }
+
     public short getRed() {
         short redValue;
         //TODO See if you can program it without typecast
