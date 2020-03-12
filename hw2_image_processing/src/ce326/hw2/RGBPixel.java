@@ -8,7 +8,7 @@ public class RGBPixel {
     private int pixel; //bytes: msb-red-green-blue(lsb)
 
     public RGBPixel(short red, short green, short blue) {
-        this.pixel = (blue << 16) | (green << 8) | red;
+        this.pixel = (red << 16) | (green << 8) | blue;
 
     }
 
@@ -39,7 +39,7 @@ public class RGBPixel {
     public short getRed() {
         short redValue;
         //TODO See if you can program it without typecast
-        redValue = (short) ((this.pixel >> (8 * (1 - 1))) & 0xFF);
+        redValue = (short) ((this.pixel >> (8 * (3 - 1))) & 0xFF);
         return redValue;
     }
 
@@ -51,21 +51,21 @@ public class RGBPixel {
 
     public short getBlue() {
         short blueValue;
-        blueValue = (short) ((this.pixel >> (8 * (3 - 1))) & 0xFF);
+        blueValue = (short) ((this.pixel >> (8 * (1 - 1))) & 0xFF);
         return blueValue;
     }
 
     public void setRed(short red) {
         //TODO See if there is a more optimal way for this
-        this.pixel = (this.getBlue() << 16) | (this.getGreen() << 8) | red;
+        this.pixel = (red << 16) | (this.getGreen() << 8) | this.getBlue();
     }
 
     public void setGreen(short green) {
-        this.pixel = (this.getBlue() << 16) | (green << 8) | this.getRed();
+        this.pixel = (this.getRed() << 16) | (green << 8) | this.getBlue();
     }
 
     public void setBlue(short blue) {
-        this.pixel = (blue << 16) | (this.getGreen() << 8) | this.getRed();
+        this.pixel = (this.getRed() << 16) | (this.getGreen() << 8) | blue;
     }
 
     public int getRGB() {
