@@ -16,6 +16,17 @@ public class RGBImage implements Image {
         setImage(copyImg.imageWidth, copyImg.imageHeight, copyImg.imageColorDepth, copyImg.image);
     }
 
+    public RGBImage(YUVImage img) {
+        RGBPixel[][] YUV2RGBArray = new RGBPixel[img.getHeight()][img.getWidth()];
+        for (int i = 0; i < img.getHeight(); i++) {
+            for (int j = 0; j < img.getWidth(); j++) {
+                RGBPixel convertedPixel = new RGBPixel(img.getPixel(i,j));
+                YUV2RGBArray[i][j] = convertedPixel;
+            }
+        }
+        setImage(img.getWidth(), img.getHeight(), MAX_COLORDEPTH, YUV2RGBArray);
+    }
+
     public void setImage(int width, int height, int colordepth) {
         this.imageHeight = height;
         this.imageWidth = width;

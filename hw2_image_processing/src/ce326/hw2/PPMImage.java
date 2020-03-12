@@ -45,6 +45,10 @@ public class PPMImage extends RGBImage {
         super(img);
     }
 
+    public PPMImage(YUVImage img) {
+        super(img);
+
+    }
     private boolean isPPMExtension(java.io.File file) {
         if (file == null) {
             return false;
