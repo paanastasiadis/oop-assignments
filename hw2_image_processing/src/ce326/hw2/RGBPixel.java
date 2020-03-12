@@ -2,6 +2,8 @@ package ce326.hw2;
 
 import java.lang.*;
 
+import static ce326.hw2.RGBImage.MAX_COLORDEPTH;
+
 public class RGBPixel {
     private int pixel; //bytes: msb-red-green-blue(lsb)
 
@@ -12,6 +14,26 @@ public class RGBPixel {
 
     public RGBPixel(RGBPixel pixel) {
         this.pixel = pixel.pixel;
+    }
+
+    public RGBPixel(YUVPixel pixel) {
+        short C = (short) (pixel.getY() - 16);
+        short D = (short) (pixel.getU() - 128);
+        short E = (short) (pixel.getV() - 128);
+
+        this.setRed(clip((short) ((298 * C + 409 * E + 128) >> 8)));
+        this.setGreen(clip((short) ((298 * C - 100 * D - 208 * E + 128) >> 8)));
+        this.setBlue(clip((short) ((298 * C + 516 * D + 128) >> 8)));
+
+    }
+
+    private short clip(short value) {
+        if (value < 0) {
+            value = 0;
+        } else if (value > MAX_COLORDEPTH) {
+            value = 255;
+        }
+        return value;
     }
 
     public short getRed() {
