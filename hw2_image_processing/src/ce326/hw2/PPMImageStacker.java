@@ -21,6 +21,7 @@ public class PPMImageStacker {
             throw new FileNotFoundException("[ERROR] " + dir.getName() + " is not a directory!");
         }
 
+        /* Insert all the .ppm images from the given directory to the list */
         stackerImagesList = new ArrayList<>();
         File[] files = dir.listFiles();
 
@@ -46,6 +47,7 @@ public class PPMImageStacker {
                 short totalGreen = finalImage.getPixel(i, j).getGreen();
                 short totalBlue = finalImage.getPixel(i, j).getBlue();
 
+                /* extract the average RGB value  of each pixel of all the images in the list */
                 for (int k = 1; k < stackerImagesList.size(); k++) {
                     PPMImage currentImage = stackerImagesList.get(k);
                     short currentRed = currentImage.getPixel(i, j).getRed();
@@ -58,6 +60,7 @@ public class PPMImageStacker {
                     totalBlue += currentBlue;
                 }
 
+                /* Create a new image with pixels equals to the average RGB values of the pixels of all the images*/
                 finalImage.getPixel(i, j).setRed((short) (totalRed / stackerImagesList.size()));
                 finalImage.getPixel(i, j).setGreen((short) (totalGreen / stackerImagesList.size()));
                 finalImage.getPixel(i, j).setBlue((short) (totalBlue / stackerImagesList.size()));
@@ -66,8 +69,16 @@ public class PPMImageStacker {
         }
     }
 
-    //TODO See if it is needed to throw exception for null occasion
     public PPMImage getStackedImage() {
+        try {
+            if (finalImage == null) {
+                throw new IllegalArgumentException("[ERROR] You must call stack() method first, " +
+                        "before using getStackedImage() method.");
+            }
+        }
+        catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+        }
         return finalImage;
     }
 }
