@@ -15,13 +15,11 @@ public class YUVImage {
     }
 
     public YUVImage(YUVImage copyImg) {
-        setImage(copyImg.getHeight(), copyImg.getWidth(), copyImg.image);
+        setImage(copyImg.getHeight(), copyImg.getWidth(), copyImg.getImage());
     }
 
     public YUVImage(RGBImage RGBImg) {
-        this.imageHeight = RGBImg.getHeight();
-        this.imageWidth = RGBImg.getWidth();
-        this.image = new YUVPixel[this.getHeight()][this.getWidth()];
+        setImage(RGBImg.getWidth(),RGBImg.getHeight());
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {
                 setPixel(i, j, new YUVPixel(RGBImg.getPixel(i, j)));
@@ -33,12 +31,13 @@ public class YUVImage {
 
         Scanner sc = new Scanner(file);
 
+        //Check if the given file has a .yuv extension
         YUVFileFilter fileExtension = new YUVFileFilter();
         if (file.isDirectory() || !fileExtension.accept(file)) {
             throw new UnsupportedFileFormatException(fileExtension.getDescription());
         }
 
-        sc.next();
+        sc.next(); //to get ahead of the string "YUV3" on .yuv format files
 
         int yuvWidth = sc.nextInt();
         int yuvHeight = sc.nextInt();
@@ -62,10 +61,12 @@ public class YUVImage {
         }
     }
 
+    /**
+     *  Sets the default YUV image with every pixel having YUV = {16,128,128}.
+     */
     public void setDefaultImage(int width, int height) {
-        this.imageWidth = width;
-        this.imageHeight = height;
-        this.image = new YUVPixel[height][width];
+
+        setImage(width, height);
         YUVPixel defaultPixel = new YUVPixel((short) 16, (short) 128, (short) 128);
 
         for (int i = 0; i < height; i++) {
@@ -75,6 +76,10 @@ public class YUVImage {
         }
     }
 
+    /**
+     * Initialize an empty YUV image by setting its parameters.
+     * Allocates space for YUVPixel array field "image".
+     */
     public void setImage(int width, int height) {
         this.imageHeight = height;
         this.imageWidth = width;
@@ -82,6 +87,9 @@ public class YUVImage {
 
     }
 
+    /**
+     * Set an image with parameters from another existing image.
+     */
     public void setImage(int width, int height, YUVPixel[][] pixelArray) {
         this.imageHeight = height;
         this.imageWidth = width;
@@ -94,6 +102,10 @@ public class YUVImage {
 
     public int getWidth() {
         return this.imageWidth;
+    }
+
+    public YUVPixel[][] getImage() {
+        return image;
     }
 
     public void setPixel(int row, int col, YUVPixel pixelYUVPixel) {

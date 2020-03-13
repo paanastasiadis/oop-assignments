@@ -26,7 +26,7 @@ public class RGBImage implements Image {
     }
 
     /**
-     * Initialize an empty image by setting its parameters.
+     * Initialize an empty RGB image by setting its parameters.
      * Allocates space for RGBPixel array field "image".
      */
     public void setImage(int width, int height, int colordepth) {

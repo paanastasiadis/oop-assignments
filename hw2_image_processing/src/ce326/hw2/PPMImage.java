@@ -17,7 +17,7 @@ public class PPMImage extends RGBImage {
             throw new UnsupportedFileFormatException(fileExtension.getDescription());
         }
 
-        sc.next(); //to get ahead the string "P3" on PPM format files
+        sc.next(); //to get ahead of the string "P3" on PPM format files
 
         int ppmWidth = sc.nextInt();
         int ppmHeight = sc.nextInt();
