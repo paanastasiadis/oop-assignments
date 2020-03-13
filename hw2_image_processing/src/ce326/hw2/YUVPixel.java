@@ -1,7 +1,7 @@
 package ce326.hw2;
 
 public class YUVPixel {
-    private int pixel;
+    private int pixel; //bytes assigned: MSB-Y-U-(V-LSB)
 
     public YUVPixel(short Y, short U, short V) {
         this.pixel = (Y << 16) | (U << 8) | V;

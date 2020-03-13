@@ -5,7 +5,7 @@ import java.lang.*;
 import static ce326.hw2.RGBImage.MAX_COLORDEPTH;
 
 public class RGBPixel {
-    private int pixel; //bytes: msb-red-green-blue(lsb)
+    private int pixel; //bytes assigned: MSB-red-green-(blue-LSB)
 
     public RGBPixel(short red, short green, short blue) {
         this.pixel = (red << 16) | (green << 8) | blue;
@@ -27,6 +27,13 @@ public class RGBPixel {
 
     }
 
+    /**
+     * Helpful method for YUV2RGB conversions.
+     * Sets a value < 0 to 0 and a value > 255 to 255. Values in between stay as are.
+     *
+     * @param value the value to clip
+     * @return returns the new clipped value
+     */
     private short clip(short value) {
         if (value < 0) {
             value = 0;
@@ -37,26 +44,18 @@ public class RGBPixel {
     }
 
     public short getRed() {
-        short redValue;
-        //TODO See if you can program it without typecast
-        redValue = (short) ((this.pixel >> (8 * (3 - 1))) & 0xFF);
-        return redValue;
+        return (short) ((this.pixel >> (8 * (3 - 1))) & 0xFF);
     }
 
     public short getGreen() {
-        short greenValue;
-        greenValue = (short) ((this.pixel >> (8 * (2 - 1))) & 0xFF);
-        return greenValue;
+        return (short) ((this.pixel >> (8 * (2 - 1))) & 0xFF);
     }
 
     public short getBlue() {
-        short blueValue;
-        blueValue = (short) ((this.pixel >> (8 * (1 - 1))) & 0xFF);
-        return blueValue;
+        return (short) ((this.pixel >> (8 * (1 - 1))) & 0xFF);
     }
 
     public void setRed(short red) {
-        //TODO See if there is a more optimal way for this
         this.pixel = (red << 16) | (this.getGreen() << 8) | this.getBlue();
     }
 
