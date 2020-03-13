@@ -25,6 +25,10 @@ public class RGBImage implements Image {
         setImage(img.getWidth(), img.getHeight(), MAX_COLORDEPTH, YUV2RGBArray);
     }
 
+    /**
+     * Initialize an empty image by setting its parameters.
+     * Allocates space for RGBPixel array field "image".
+     */
     public void setImage(int width, int height, int colordepth) {
         this.imageHeight = height;
         this.imageWidth = width;
@@ -32,6 +36,9 @@ public class RGBImage implements Image {
         this.imageColorDepth = colordepth;
     }
 
+    /**
+     * Set an image with parameters from another existing image.
+     */
     public void setImage(int width, int height, int colordepth, RGBPixel[][] pixelArray) {
         this.imageHeight = height;
         this.imageWidth = width;
@@ -67,10 +74,12 @@ public class RGBImage implements Image {
     public void grayscale() {
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {
+                /* Expression to find the suitable gray value for every pixel */
                 double grayValueFloating = this.getPixel(i, j).getRed() * (0.3) +
                         this.getPixel(i, j).getGreen() * (0.59) +
                         this.getPixel(i, j).getBlue() * (0.11);
                 int grayValue = (int) grayValueFloating;
+                /* Assign the same gray value to the 3 RGB Values */
                 this.getPixel(i, j).setRGB((short) grayValue, (short) grayValue, (short) grayValue);
             }
 
@@ -85,6 +94,8 @@ public class RGBImage implements Image {
 
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {
+                /* Doubling the size of the image by duplicating the i,j pixel
+                to the following positions in the new double-sized image */
                 doubledImage.setPixel(2 * i, 2 * j, this.getPixel(i, j));
                 doubledImage.setPixel(2 * i + 1, 2 * j, this.getPixel(i, j));
                 doubledImage.setPixel(2 * i, 2 * j + 1, this.getPixel(i, j));
@@ -102,6 +113,8 @@ public class RGBImage implements Image {
 
         for (int i = 0; i < halfImage.getHeight(); i++) {
             for (int j = 0; j < halfImage.getWidth(); j++) {
+                /* Find the average RGB value of the following positions on the starting image
+                * to assign it as the new pixel value of the half-sized image*/
                 short red = (short) ((this.getPixel(2 * i, 2 * j).getRed()
                         + this.getPixel(2 * i + 1, 2 * j).getRed()
                         + this.getPixel(2 * i, 2 * j + 1).getRed()
