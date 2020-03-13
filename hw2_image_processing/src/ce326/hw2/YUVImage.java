@@ -1,6 +1,7 @@
 package ce326.hw2;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Scanner;
 
@@ -32,8 +33,9 @@ public class YUVImage {
 
         Scanner sc = new Scanner(file);
 
-        if (!isYUVExtension(file)) {
-            throw new UnsupportedFileFormatException(file.getName());
+        YUVFileFilter fileExtension = new YUVFileFilter();
+        if (file.isDirectory() || !fileExtension.accept(file)) {
+            throw new UnsupportedFileFormatException(fileExtension.getDescription());
         }
 
         sc.next();
@@ -58,19 +60,6 @@ public class YUVImage {
                 j++;
             }
         }
-    }
-
-    //TODO See if you can extract this method as universal for PPM and YUV extensions
-    private boolean isYUVExtension(java.io.File file) {
-        if (file == null) {
-            return false;
-        }
-        String name = file.getName();
-        int i = name.lastIndexOf('.');
-        if (i > 0) {
-            return name.substring(i + 1).equals("yuv");
-        }
-        return false;
     }
 
     public void setDefaultImage(int width, int height) {
@@ -132,16 +121,15 @@ public class YUVImage {
         return YUVStr.toString();
     }
 
-    //TODO Do something for the duplication between this toFile and PPM's
     public void toFile(java.io.File file) {
         //TODO Search for alternative method of truncation
         if (file.exists() && !file.isDirectory()) {
             file.delete();
         }
-        //TODO Search for optimal way of writing to file
-        try (PrintWriter outHistogram = new PrintWriter(file)) {
-            outHistogram.print(this.toString());
-        } catch (FileNotFoundException e) {
+        try (PrintWriter outYUVfile = new PrintWriter(file)) {
+            outYUVfile.print(this.toString());
+        } catch (IOException e) {
+            e.getMessage();
             e.printStackTrace();
         }
     }
@@ -151,6 +139,7 @@ public class YUVImage {
 
         Histogram imgHistogram = new Histogram(this);
         imgHistogram.equalize();
+//        imgHistogram.toFile(new File("histogram.txt"));
 
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {
