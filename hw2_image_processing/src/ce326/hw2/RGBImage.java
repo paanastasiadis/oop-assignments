@@ -7,21 +7,19 @@ public class RGBImage implements Image {
     private int imageColorDepth;
     public static final int MAX_COLORDEPTH = 255;
 
-
     public RGBImage(int width, int height, int colordepth) {
         setImage(width, height, colordepth);
     }
 
     public RGBImage(RGBImage copyImg) {
-        setImage(copyImg.imageWidth, copyImg.imageHeight, copyImg.imageColorDepth, copyImg.image);
+        setImage(copyImg.getWidth(), copyImg.getHeight(), copyImg.getColorDepth(), copyImg.getImage());
     }
 
     public RGBImage(YUVImage img) {
         RGBPixel[][] YUV2RGBArray = new RGBPixel[img.getHeight()][img.getWidth()];
         for (int i = 0; i < img.getHeight(); i++) {
             for (int j = 0; j < img.getWidth(); j++) {
-                RGBPixel convertedPixel = new RGBPixel(img.getPixel(i,j));
-                YUV2RGBArray[i][j] = convertedPixel;
+                YUV2RGBArray[i][j] = new RGBPixel(img.getPixel(i, j));
             }
         }
         setImage(img.getWidth(), img.getHeight(), MAX_COLORDEPTH, YUV2RGBArray);
@@ -49,6 +47,10 @@ public class RGBImage implements Image {
         return this.imageWidth;
     }
 
+    public RGBPixel[][] getImage() {
+        return image;
+    }
+
     public int getColorDepth() {
         return this.imageColorDepth;
     }
@@ -63,13 +65,12 @@ public class RGBImage implements Image {
 
     @Override
     public void grayscale() {
-        double grayValue;
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {
-                grayValue = this.getPixel(i, j).getRed() * (0.3) +
+                double grayValueFloating = this.getPixel(i, j).getRed() * (0.3) +
                         this.getPixel(i, j).getGreen() * (0.59) +
                         this.getPixel(i, j).getBlue() * (0.11);
-
+                int grayValue = (int) grayValueFloating;
                 this.getPixel(i, j).setRGB((short) grayValue, (short) grayValue, (short) grayValue);
             }
 
@@ -78,10 +79,9 @@ public class RGBImage implements Image {
 
     @Override
     public void doublesize() {
-        int doubleWidth = 2 * this.getWidth();
-        int doubleHeight = 2 * this.getHeight();
-        RGBImage doubledImage = new RGBImage(doubleWidth, doubleHeight, MAX_COLORDEPTH);
 
+        RGBImage doubledImage = new RGBImage(2 * this.getWidth(), 2 * this.getHeight(),
+                this.getColorDepth());
 
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {
@@ -91,17 +91,17 @@ public class RGBImage implements Image {
                 doubledImage.setPixel(2 * i + 1, 2 * j + 1, this.getPixel(i, j));
             }
         }
-        this.setImage(doubleWidth, doubleHeight, MAX_COLORDEPTH, doubledImage.image);
+        this.setImage(doubledImage.getWidth(), doubledImage.getHeight(),
+                doubledImage.getColorDepth(), doubledImage.getImage());
     }
 
     @Override
     public void halfsize() {
-        int halfWidth = this.getWidth() / 2;
-        int halfHeight = this.getHeight() / 2;
-        RGBImage halfImage = new RGBImage(halfWidth, halfHeight, MAX_COLORDEPTH);
+        RGBImage halfImage = new RGBImage(this.getWidth() / 2, this.getHeight() / 2,
+                this.getColorDepth());
 
-        for (int i = 0; i < halfHeight; i++) {
-            for (int j = 0; j < halfWidth; j++) {
+        for (int i = 0; i < halfImage.getHeight(); i++) {
+            for (int j = 0; j < halfImage.getWidth(); j++) {
                 short red = (short) ((this.getPixel(2 * i, 2 * j).getRed()
                         + this.getPixel(2 * i + 1, 2 * j).getRed()
                         + this.getPixel(2 * i, 2 * j + 1).getRed()
@@ -122,14 +122,13 @@ public class RGBImage implements Image {
             }
 
         }
-        this.setImage(halfWidth, halfHeight, MAX_COLORDEPTH, halfImage.image);
+        this.setImage(halfImage.getWidth(), halfImage.getHeight(),
+                halfImage.getColorDepth(), halfImage.getImage());
     }
 
     @Override
     public void rotateClockwise() {
-        int rotatedHeight = this.getWidth();
-        int rotatedWidth = this.getHeight();
-        RGBImage rotatedImage = new RGBImage(rotatedWidth, rotatedHeight, MAX_COLORDEPTH);
+        RGBImage rotatedImage = new RGBImage(this.getHeight(), this.getWidth(), this.getColorDepth());
 
         for (int i = 0; i < this.getWidth(); i++) {
             for (int j = 0; j < this.getHeight(); j++) {
@@ -138,6 +137,7 @@ public class RGBImage implements Image {
             }
 
         }
-        this.setImage(rotatedWidth, rotatedHeight, MAX_COLORDEPTH, rotatedImage.image);
+        this.setImage(rotatedImage.getWidth(), rotatedImage.getHeight(),
+                rotatedImage.getColorDepth(), rotatedImage.getImage());
     }
 }
