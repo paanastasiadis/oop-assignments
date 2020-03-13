@@ -126,7 +126,6 @@ public class YUVImage {
         try (PrintWriter outYUVfile = new PrintWriter(file)) {
             outYUVfile.print(this.toString());
         } catch (IOException e) {
-            e.getMessage();
             e.printStackTrace();
         }
     }

@@ -55,7 +55,6 @@ public class PPMImage extends RGBImage {
         try (PrintWriter outPPMFile = new PrintWriter(file)) {
             outPPMFile.print(this.toString());
         } catch (IOException e) {
-            e.getMessage();
             e.printStackTrace();
         }
     }
