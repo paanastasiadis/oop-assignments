@@ -5,18 +5,19 @@ import java.util.Scanner;
 
 public class PPMImage extends RGBImage {
 
-
     public PPMImage(java.io.File file) throws UnsupportedFileFormatException, FileNotFoundException {
 
+        //initialize the parent class with zero values before reading from file
         super(0, 0, 0);
         Scanner sc = new Scanner(file);
 
+        //Check if the given file has a .ppm extension
         PPMFileFilter fileExtension = new PPMFileFilter();
         if (file.isDirectory() || !fileExtension.accept(file)) {
             throw new UnsupportedFileFormatException(fileExtension.getDescription());
         }
 
-        sc.next();
+        sc.next(); //to get ahead the string "P3" on PPM format files
 
         int ppmWidth = sc.nextInt();
         int ppmHeight = sc.nextInt();
@@ -78,6 +79,4 @@ public class PPMImage extends RGBImage {
         }
         return PPMStr.toString();
     }
-
-
 }
