@@ -27,9 +27,9 @@ public class Histogram {
 
         for (int value : histogramArray) {
             int thousands = value / 1000;
-//            int mod = histogramArray[i] % 1000;
-            int hundreds = value / 100;
-//            int units = mod % 100;
+            int mod = value % 1000;
+            int hundreds = mod / 100;
+            int units = mod % 100;
 
             luminosityStr.append(value);
             luminosityStr.append(" ");
@@ -39,7 +39,7 @@ public class Histogram {
             for (int j = 0; j < hundreds; j++) {
                 luminosityStr.append('$');
             }
-            for (int j = 0; j < value; j++) {
+            for (int j = 0; j < units; j++) {
                 luminosityStr.append('*');
             }
             luminosityStr.append('\n');
