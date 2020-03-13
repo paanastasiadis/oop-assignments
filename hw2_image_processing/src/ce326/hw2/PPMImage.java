@@ -47,23 +47,16 @@ public class PPMImage extends RGBImage {
 
     public PPMImage(YUVImage img) {
         super(img);
-
     }
 
     public void toFile(java.io.File file) {
 
-        //TODO Search for alternative method of truncation
-        if (file.exists() && !file.isDirectory()) {
-            file.delete();
-        }
         try (PrintWriter outPPMFile = new PrintWriter(file)) {
             outPPMFile.print(this.toString());
         } catch (IOException e) {
             e.getMessage();
             e.printStackTrace();
         }
-
-
     }
 
     @Override

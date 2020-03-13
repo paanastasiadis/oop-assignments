@@ -48,9 +48,6 @@ public class Histogram {
     }
 
     public void toFile(java.io.File file) {
-        if (file.exists() && !file.isDirectory()) {
-            file.delete();
-        }
 
         try (PrintWriter outHistogram = new PrintWriter(file)) {
             outHistogram.print(this.toString());

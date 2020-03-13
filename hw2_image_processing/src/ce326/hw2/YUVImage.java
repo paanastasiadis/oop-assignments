@@ -122,10 +122,7 @@ public class YUVImage {
     }
 
     public void toFile(java.io.File file) {
-        //TODO Search for alternative method of truncation
-        if (file.exists() && !file.isDirectory()) {
-            file.delete();
-        }
+
         try (PrintWriter outYUVfile = new PrintWriter(file)) {
             outYUVfile.print(this.toString());
         } catch (IOException e) {
@@ -135,11 +132,9 @@ public class YUVImage {
     }
 
     public void equalize() {
-//        YUVImage equalizedImage = new YUVImage(this);
 
         Histogram imgHistogram = new Histogram(this);
         imgHistogram.equalize();
-//        imgHistogram.toFile(new File("histogram.txt"));
 
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {
