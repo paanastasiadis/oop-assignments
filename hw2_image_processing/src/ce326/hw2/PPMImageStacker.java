@@ -10,8 +10,7 @@ public class PPMImageStacker {
     private List<PPMImage> stackerImagesList;
     private PPMImage finalImage;
 
-
-    public PPMImageStacker(java.io.File dir) throws FileNotFoundException, UnsupportedFileFormatException  {
+    public PPMImageStacker(java.io.File dir) throws FileNotFoundException, UnsupportedFileFormatException {
 
         if (!dir.exists()) {
             System.err.println("[ERROR] Directory " + dir.getName() + " does not exist!");
@@ -26,7 +25,7 @@ public class PPMImageStacker {
         File[] files = dir.listFiles();
 
         for (File f : files) {
-            if( f.isFile() && f.getName().substring(f.getName().length()-4).equals(".ppm")) {
+            if (f.isFile() && f.getName().substring(f.getName().length() - 4).equals(".ppm")) {
                 PPMImage fileImage = new PPMImage(f);
                 stackerImagesList.add(fileImage);
             }
@@ -75,8 +74,7 @@ public class PPMImageStacker {
                 throw new IllegalArgumentException("[ERROR] You must call stack() method first, " +
                         "before using getStackedImage() method.");
             }
-        }
-        catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
         }
         return finalImage;

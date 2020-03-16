@@ -19,7 +19,7 @@ public class YUVImage {
     }
 
     public YUVImage(RGBImage RGBImg) {
-        setImage(RGBImg.getWidth(),RGBImg.getHeight());
+        setImage(RGBImg.getWidth(), RGBImg.getHeight());
         for (int i = 0; i < this.getHeight(); i++) {
             for (int j = 0; j < this.getWidth(); j++) {
                 setPixel(i, j, new YUVPixel(RGBImg.getPixel(i, j)));
@@ -62,7 +62,7 @@ public class YUVImage {
     }
 
     /**
-     *  Sets the default YUV image with every pixel having YUV = {16,128,128}.
+     * Sets the default YUV image with every pixel having YUV = {16,128,128}.
      */
     public void setDefaultImage(int width, int height) {
 
@@ -142,6 +142,9 @@ public class YUVImage {
         }
     }
 
+    /**
+     * Equalization of the YUV Image
+     */
     public void equalize() {
 
         Histogram imgHistogram = new Histogram(this);

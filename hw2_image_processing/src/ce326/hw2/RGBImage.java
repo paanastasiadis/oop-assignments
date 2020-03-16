@@ -114,7 +114,7 @@ public class RGBImage implements Image {
         for (int i = 0; i < halfImage.getHeight(); i++) {
             for (int j = 0; j < halfImage.getWidth(); j++) {
                 /* Find the average RGB value of the following positions on the starting image
-                * to assign it as the new pixel value of the half-sized image*/
+                 * to assign it as the new pixel value of the half-sized image*/
                 short red = (short) ((this.getPixel(2 * i, 2 * j).getRed()
                         + this.getPixel(2 * i + 1, 2 * j).getRed()
                         + this.getPixel(2 * i, 2 * j + 1).getRed()

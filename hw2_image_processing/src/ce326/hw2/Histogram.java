@@ -28,10 +28,10 @@ public class Histogram {
         StringBuilder luminosityStr = new StringBuilder();
 
         /* Construct the Histogram string with the following format
-        * Luminosity(0-255) #(Thousands)$(Hundreds)$Units
-        * e.g. > Luminosity = 234, Number of Pixels = 3402
-        * > 234 ###$$$$**
-        * */
+         * Luminosity(0-255) #(Thousands)$(Hundreds)$Units
+         * e.g. > Luminosity = 234, Number of Pixels = 3402
+         * > 234 ###$$$$**
+         * */
         for (int i = 0; i < histogramArray.length; i++) {
             int thousands = histogramArray[i] / 1000;
             int mod = histogramArray[i] % 1000;
@@ -85,7 +85,7 @@ public class Histogram {
     }
 
     public short getEqualizedLuminosity(int luminosity) {
-        return (short)equalizedHistogramArray[luminosity];
+        return (short) equalizedHistogramArray[luminosity];
     }
 }
 
