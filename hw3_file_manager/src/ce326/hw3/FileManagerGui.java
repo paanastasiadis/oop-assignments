@@ -17,6 +17,8 @@ public class FileManagerGui {
     private JPanel contentsPanel;
     private JScrollPane scrollingContentsPanel;
 
+    private EditMenu eMenu;
+
 
     public FileManagerGui() {
         //Create and set up the window.
@@ -33,8 +35,6 @@ public class FileManagerGui {
         setMainPanel();
 
         frame.setJMenuBar(menuBar);
-
-//        frame.getContentPane().add(topBar, BorderLayout.NORTH);
         frame.getContentPane().add(mainPanel, BorderLayout.CENTER);
 
         // set window size
@@ -44,8 +44,7 @@ public class FileManagerGui {
     }
 
     private void setMainPanel() {
-        //right panel for all the rest
-        //use gridbag to layout the 3 panels in the right panel
+
         JPanel rightPanel = new JPanel();
 
         GridBagLayout gbl_rightPanel = new GridBagLayout();
@@ -85,7 +84,7 @@ public class FileManagerGui {
         mainPanel.add(rightPanel, BorderLayout.CENTER);
 
 
-        ContentsPanelUtilities contents = new ContentsPanelUtilities(contentsPanel, pathBar, frame);
+        ContentsPanelUtilities contents = new ContentsPanelUtilities(contentsPanel, pathBar,eMenu, frame);
         contents.browseDirectory(System.getProperty("user.home"));
 
         File initFile = new File(System.getProperty("user.home"));
@@ -99,8 +98,15 @@ public class FileManagerGui {
         JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
 
-        JMenu editMenu = new JMenu("Edit");
-        editMenu.setMnemonic(KeyEvent.VK_E);
+         eMenu = new EditMenu("Edit", mainPanel);
+//        editMenu.setMnemonic(KeyEvent.VK_E);
+//
+//        JMenuItem renameItem = new JMenuItem("Rename");
+//        renameItem.setMnemonic(KeyEvent.VK_R);
+//        renameItem.setToolTipText("Rename a file or directory");
+//
+//        editMenu.setEnabled(false);
+//        editMenu.add(renameItem);
 
         JMenu searchMenu = new JMenu("Search");
         searchMenu.setMnemonic(KeyEvent.VK_S);
@@ -119,11 +125,13 @@ public class FileManagerGui {
             }
         }));
 
+
+
         fileMenu.add(newWindowItem);
         fileMenu.add(eMenuItem);
 
         menuBar.add(fileMenu);
-        menuBar.add(editMenu);
+        menuBar.add(eMenu);
         menuBar.add(searchMenu);
 
     }

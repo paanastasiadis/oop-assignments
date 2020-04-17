@@ -2,10 +2,7 @@ package ce326.hw3;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,28 +12,29 @@ public class ContentsPanelUtilities {
     private JPanel container;
     private JPanel breadCrumb;
     private JFrame frame;
+    private EditMenu editMenu;
+    ButtonGroup bg;
 
-    public ContentsPanelUtilities(JPanel contentsPanel, JPanel breadCrumbPanel, JFrame mainFrame) {
+    public ContentsPanelUtilities(JPanel contentsPanel, JPanel breadCrumbPanel, EditMenu menuBar,JFrame mainFrame) {
         container = contentsPanel;
         breadCrumb = breadCrumbPanel;
         frame = mainFrame;
+        editMenu = menuBar;
     }
 
     public void browseDirectory(String dir) {
         File f = new File(dir);
         File[] s = f.listFiles();
-        ArrayList<JButton> folders = new ArrayList<JButton>();
-        ArrayList<JButton> files = new ArrayList<JButton>();
+        ArrayList<JToggleButton> folders = new ArrayList<JToggleButton>();
+        ArrayList<JToggleButton> files = new ArrayList<JToggleButton>();
         try {
             for (File s1 : s) {
-
-
-                JButton btn;
+                JToggleButton btn;
 
                 if (s1.getName().length() > 20) {
-                    btn = new JButton(s1.getName().substring(0, 20) + "..");
+                    btn = new JToggleButton(s1.getName().substring(0, 20) + "..");
                 } else {
-                    btn = new JButton(s1.getName());
+                    btn = new JToggleButton(s1.getName());
                 }
                 if (s1.isFile()) {
                     files.add(btn);
@@ -50,11 +48,13 @@ public class ContentsPanelUtilities {
                 btn.setContentAreaFilled(false);
                 btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setHorizontalTextPosition(SwingConstants.CENTER);
-
+                btn.setFocusable(false);
                 btn.addMouseListener(new MouseAdapter() {
                                          @Override
                                          public void mouseClicked(MouseEvent e) {
                                              if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+//                                                 editMenu.setEnabled(false);
+
                                                  if (s1.isFile()) {
                                                      try {
                                                          Desktop.getDesktop().open(s1);
@@ -74,38 +74,61 @@ public class ContentsPanelUtilities {
                                                  }
                                              } else if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
 //                                                btn.setBackground(Color.cyan);
+//                                                 editMenu.setEnabled(true);
                                              }
                                          }
                                      }
 
                 );
 
+                ContentsPanelUtilities contentsToUpdate = this;
+                btn.addItemListener(new ItemListener() {
+                    @Override
+                    public void itemStateChanged(ItemEvent itemEvent) {
+                        if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                            editMenu.setEnabled(true);
+                            editMenu.setSelectedFile(s1, contentsToUpdate);
+                            btn.setContentAreaFilled(true);
+                        }
+                        else {
+                            btn.setContentAreaFilled(false);
+                            editMenu.setEnabled(false);
+                        }
+                    }
+                });
             }
-            folders.sort(new Comparator<JButton>() {
+
+            folders.sort(new Comparator<JToggleButton>() {
                 @Override
-                public int compare(JButton jButton, JButton t1) {
+                public int compare(JToggleButton jButton, JToggleButton t1) {
 
                     return jButton.getText().compareToIgnoreCase(t1.getText());
                 }
             });
 
-            files.sort(new Comparator<JButton>() {
+            files.sort(new Comparator<JToggleButton>() {
                 @Override
-                public int compare(JButton jButton, JButton t1) {
+                public int compare(JToggleButton jButton, JToggleButton t1) {
 
                     return jButton.getText().compareToIgnoreCase(t1.getText());
                 }
             });
-            for (JButton folder : folders) {
+
+
+            bg = new ButtonGroup();
+            for (JToggleButton folder : folders) {
                 JPanel btnContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                bg.add(folder);
                 btnContainer.add(folder);
                 container.add(btnContainer);
             }
-            for (JButton file : files) {
+            for (JToggleButton file : files) {
                 JPanel btnContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                bg.add(file);
                 btnContainer.add(file);
                 container.add(btnContainer);
             }
+//            container.add(bg);
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(frame.getRootPane(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -114,6 +137,7 @@ public class ContentsPanelUtilities {
 
 
     public void setBreadCrumb(File file) {
+        bg.clearSelection();
         breadCrumb.removeAll();
         breadCrumb.revalidate();
         boolean isLastInPath = true;
@@ -156,6 +180,13 @@ public class ContentsPanelUtilities {
             file = file.getParentFile();
         }
 
+
+    }
+    public void updateCurrentDirectory(File currentDirectory) {
+        setBreadCrumb(currentDirectory);
+        container.removeAll();
+        browseDirectory(currentDirectory.getAbsolutePath());
+        container.revalidate();
 
     }
 
@@ -225,3 +256,4 @@ public class ContentsPanelUtilities {
 
     }
 }
+
