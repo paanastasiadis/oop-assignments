@@ -66,7 +66,7 @@ public class ContentsPanelUtilities {
 
                                                      setBreadCrumb(s1);
                                                      container.removeAll();
-//                                                     container.revalidate();
+                                                     container.revalidate();
                                                      browseDirectory(s1.getAbsolutePath());
                                                      container.revalidate();
                                                      container.repaint();
@@ -128,6 +128,8 @@ public class ContentsPanelUtilities {
                 btnContainer.add(file);
                 container.add(btnContainer);
             }
+            container.revalidate();
+            container.repaint();
 //            container.add(bg);
 
         } catch (Exception e) {
@@ -187,6 +189,7 @@ public class ContentsPanelUtilities {
         container.removeAll();
         browseDirectory(currentDirectory.getAbsolutePath());
         container.revalidate();
+        container.repaint();
 
     }
 
