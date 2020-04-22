@@ -84,7 +84,7 @@ public class FileManagerGui {
         mainPanel.add(rightPanel, BorderLayout.CENTER);
 
 
-        ContentsPanelUtilities contents = new ContentsPanelUtilities(contentsPanel, pathBar,eMenu, frame);
+        ContentsPanelUtilities contents = new ContentsPanelUtilities(contentsPanel, pathBar, eMenu, frame);
         contents.browseDirectory(System.getProperty("user.home"));
 
         File initFile = new File(System.getProperty("user.home"));
@@ -98,15 +98,8 @@ public class FileManagerGui {
         JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
 
-         eMenu = new EditMenu("Edit", mainPanel);
-//        editMenu.setMnemonic(KeyEvent.VK_E);
-//
-//        JMenuItem renameItem = new JMenuItem("Rename");
-//        renameItem.setMnemonic(KeyEvent.VK_R);
-//        renameItem.setToolTipText("Rename a file or directory");
-//
-//        editMenu.setEnabled(false);
-//        editMenu.add(renameItem);
+        eMenu = new EditMenu("Edit", mainPanel);
+
 
         JMenu searchMenu = new JMenu("Search");
         searchMenu.setMnemonic(KeyEvent.VK_S);
@@ -126,7 +119,6 @@ public class FileManagerGui {
         }));
 
 
-
         fileMenu.add(newWindowItem);
         fileMenu.add(eMenuItem);
 
@@ -138,7 +130,7 @@ public class FileManagerGui {
 
     private void setFavoritesPanel() {
         favoritesPanel = new JPanel();
-        favoritesPanel.setLayout(new GridLayout(6, 1));
+        favoritesPanel.setLayout(new git(6, 1));
         //add components (buttons) to buttons panel
 //        JPanel insertionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 //        insertionPanel.add(insertionButton);
@@ -179,7 +171,7 @@ public class FileManagerGui {
     private void setContentsPanel() {
         contentsPanel = new JPanel();
         contentsPanel.setOpaque(false);
-        contentsPanel.setLayout(new GridLayout(0,4));
+        contentsPanel.setLayout(new GridLayout(0, 4));
 
         scrollingContentsPanel = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollingContentsPanel.setViewportView(contentsPanel);

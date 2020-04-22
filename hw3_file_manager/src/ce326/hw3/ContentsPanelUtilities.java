@@ -49,6 +49,19 @@ public class ContentsPanelUtilities {
                 btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setHorizontalTextPosition(SwingConstants.CENTER);
                 btn.setFocusable(false);
+
+                ContentsPanelUtilities contentsToUpdate = this;
+                btn.addItemListener(itemEvent -> {
+                    if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                        editMenu.setEnabled(true);
+                        editMenu.setSelectedFile(s1, contentsToUpdate);
+                        btn.setContentAreaFilled(true);
+                    }
+                    else {
+                        btn.setContentAreaFilled(false);
+                        editMenu.setEnabled(false);
+                    }
+                });
                 btn.addMouseListener(new MouseAdapter() {
                                          @Override
                                          public void mouseClicked(MouseEvent e) {
@@ -72,30 +85,17 @@ public class ContentsPanelUtilities {
                                                      container.repaint();
 
                                                  }
-                                             } else if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
-//                                                btn.setBackground(Color.cyan);
-//                                                 editMenu.setEnabled(true);
+                                             }
+                                             else if (e.getButton() == MouseEvent.BUTTON3) {
+                                                 btn.setSelected(true);
+                                                 editMenu.showAsPopUp(btn, e.getX(), e.getY());
                                              }
                                          }
                                      }
 
                 );
 
-                ContentsPanelUtilities contentsToUpdate = this;
-                btn.addItemListener(new ItemListener() {
-                    @Override
-                    public void itemStateChanged(ItemEvent itemEvent) {
-                        if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-                            editMenu.setEnabled(true);
-                            editMenu.setSelectedFile(s1, contentsToUpdate);
-                            btn.setContentAreaFilled(true);
-                        }
-                        else {
-                            btn.setContentAreaFilled(false);
-                            editMenu.setEnabled(false);
-                        }
-                    }
-                });
+
             }
 
             folders.sort(new Comparator<JToggleButton>() {

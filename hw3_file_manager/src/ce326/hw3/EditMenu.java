@@ -3,6 +3,7 @@ package ce326.hw3;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +24,8 @@ public class EditMenu extends JMenu {
     private static final int COPY_OPTION = 1;
     private static final int CUT_OPTION = 2;
 
+    private JPopupMenu popUpEdit;
+
     public EditMenu(String MenuName, JPanel appPanel) {
         super(MenuName);
 
@@ -31,10 +34,38 @@ public class EditMenu extends JMenu {
         setEnabled(false);
 
         //rename option
+        JMenuItem[] items = createEditItems();
+
+        for (JMenuItem i:items) {
+            add(i);
+        }
+
+        popUpEdit = new JPopupMenu();
+
+        JMenuItem[] popItems = createEditItems();
+        for (JMenuItem i:popItems) {
+            popUpEdit.add(i);
+        }
+
+//        add(renameItem);
+//        add(copyItem);
+//        add(cutItem);
+//        add(pasteItem);
+//        add(deleteItem);
+//        add(addToFavoritesItem);
+//        add(propertiesItem);
+
+
+    }
+
+    private JMenuItem[] createEditItems() {
+        JMenuItem[] editItems = new JMenuItem[7];
+
         JMenuItem renameItem = new JMenuItem("Rename");
         renameItem.setMnemonic(KeyEvent.VK_R);
         renameItem.setToolTipText("Rename a file or directory");
         renameItem.addActionListener(actionEvent -> renameFile());
+        editItems[0] = renameItem;
 
         JMenuItem pasteItem = new JMenuItem("Paste");
         pasteItem.setEnabled(false);
@@ -48,6 +79,7 @@ public class EditMenu extends JMenu {
                 }
             }
         });
+        editItems[1] = pasteItem;
 
         //copy option
         JMenuItem copyItem = new JMenuItem("Copy");
@@ -60,6 +92,7 @@ public class EditMenu extends JMenu {
         });
         copyItem.setMnemonic(KeyEvent.VK_C);
         copyItem.setToolTipText("Copy a file or directory");
+        editItems[2] = copyItem;
 
         //cut option
         JMenuItem cutItem = new JMenuItem("Cut");
@@ -72,6 +105,7 @@ public class EditMenu extends JMenu {
                 pasteItem.setEnabled(true);
             }
         });
+        editItems[3] = cutItem;
 
 
         JMenuItem deleteItem = new JMenuItem("Delete");
@@ -80,20 +114,27 @@ public class EditMenu extends JMenu {
             deleteFile();
         });
         deleteItem.setToolTipText("Delete a file or directory");
+        editItems[4] = deleteItem;
 
         JMenuItem addToFavoritesItem = new JMenuItem("Add to Favorites");
         addToFavoritesItem.setToolTipText("Add a directory to the Favorites panel");
+        editItems[5] = addToFavoritesItem;
 
         JMenuItem propertiesItem = new JMenuItem("Properties");
+        propertiesItem.addActionListener(actionEvent -> {
+            showProperties();
+        });
         propertiesItem.setToolTipText("See the properties of a file or a directory");
+        editItems[6] = propertiesItem;
 
-        add(renameItem);
-        add(copyItem);
-        add(cutItem);
-        add(pasteItem);
-        add(deleteItem);
-        add(addToFavoritesItem);
-        add(propertiesItem);
+        return editItems;
+
+    }
+
+    public void showAsPopUp(JComponent panel, int posX, int posY) {
+
+//        panel.add(popUpEdit);
+        popUpEdit.show(panel, posX, posY);
     }
 
     public void setSelectedFile(File file, ContentsPanelUtilities contentsPanel) {
@@ -101,7 +142,85 @@ public class EditMenu extends JMenu {
         contentsToUpdate = contentsPanel;
     }
 
+    private void showProperties() {
+        StringBuilder propertiesMessage = new StringBuilder();
+        propertiesMessage.append("Name: ");
+        propertiesMessage.append(selectedFile.getName());
+        propertiesMessage.append("\n");
+        propertiesMessage.append("Path: ");
+        propertiesMessage.append(selectedFile.getPath());
+        propertiesMessage.append("\n");
+        propertiesMessage.append("Size: ");
+        long size = 0;
+        if (selectedFile.isDirectory()) {
+            if (selectedFile.listFiles() != null) {
+                for (File f : selectedFile.listFiles()) {
+                    size += f.length();
+                }
+            }
+        } else {
+            size = selectedFile.length();
+        }
+        propertiesMessage.append(size);
+        propertiesMessage.append(" bytes");
+        propertiesMessage.append("\nPermissions");
+        JCheckBox readable = new JCheckBox("Read  ");
+        JCheckBox writable = new JCheckBox("Write ");
+        JCheckBox executable = new JCheckBox("Execute ");
+
+        boolean allowedToWrite;
+        boolean initialWritePerm = selectedFile.canWrite();
+        if (initialWritePerm) {
+            allowedToWrite = selectedFile.setWritable(false);
+        } else {
+            allowedToWrite = selectedFile.setWritable(true);
+        }
+
+        if (!allowedToWrite) {
+            writable.setEnabled(false);
+            readable.setEnabled(false);
+            executable.setEnabled(false);
+        } else {
+            selectedFile.setWritable(initialWritePerm);
+
+            readable.setSelected(selectedFile.canRead());
+            writable.setSelected(selectedFile.canWrite());
+            executable.setSelected(selectedFile.canExecute());
+
+            readable.addItemListener(itemEvent -> {
+                if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                    selectedFile.setReadable(true);
+                } else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
+                    selectedFile.setReadable(false);
+                }
+            });
+
+            writable.addItemListener(itemEvent -> {
+                if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                    selectedFile.setWritable(true);
+                } else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
+                    selectedFile.setWritable(false);
+                }
+            });
+
+            executable.addItemListener(itemEvent -> {
+                if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                    selectedFile.setExecutable(true);
+                } else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
+                    selectedFile.setExecutable(false);
+                }
+            });
+
+        }
+
+
+        Object msg[] = {propertiesMessage, writable, readable, executable};
+
+        JOptionPane.showMessageDialog(mainPanel, msg, "Properties", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     private int pasteFile() {
+        selectedFile = selectedFile.getParentFile();
         if (selectedFile.isFile()) {
             JOptionPane.showMessageDialog(mainPanel, "Not a directory", "Error", JOptionPane.ERROR_MESSAGE);
             return 1;
@@ -140,7 +259,7 @@ public class EditMenu extends JMenu {
 
             }
 
-            File currentDirectory = new File(selectedFile.getParentFile().getPath());
+            File currentDirectory = new File(selectedFile.getPath());
             if (selectionType == CUT_OPTION) {
 
                 try {
