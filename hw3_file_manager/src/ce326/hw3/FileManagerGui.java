@@ -8,7 +8,6 @@ import java.io.File;
 public class FileManagerGui {
     private JFrame frame;
     private JPanel mainPanel;
-    //    private JPanel topBar;
     private JMenuBar menuBar;
     private JPanel favoritesPanel;
     private JPanel searchBar;
@@ -18,6 +17,7 @@ public class FileManagerGui {
     private JScrollPane scrollingContentsPanel;
 
     private EditMenu eMenu;
+    private FavoritesInXML xmlfavorites;
 
 
     public FileManagerGui() {
@@ -83,12 +83,17 @@ public class FileManagerGui {
         mainPanel.add(favoritesPanel, BorderLayout.WEST);
         mainPanel.add(rightPanel, BorderLayout.CENTER);
 
-
-        ContentsPanelUtilities contents = new ContentsPanelUtilities(contentsPanel, pathBar, eMenu, frame);
+        xmlfavorites = new FavoritesInXML(System.getProperty("user.home"));
+        ContentsPanelUtilities contents = new ContentsPanelUtilities(contentsPanel, pathBar, eMenu, xmlfavorites, favoritesPanel);
         contents.browseDirectory(System.getProperty("user.home"));
 
         File initFile = new File(System.getProperty("user.home"));
         contents.setBreadCrumb(initFile);
+
+//        xmlfavorites.addToXML("Documents", "/home/paanastasiadis/Documents");
+//        xmlfavorites.addToXML("Downloads", "/home/paanastasiadis/Downloads");
+        File[] existingFiles = xmlfavorites.readAllEntries();
+        contents.initFavorites(existingFiles, System.getProperty("user.home"));
 
 
     }
@@ -100,14 +105,19 @@ public class FileManagerGui {
 
         eMenu = new EditMenu("Edit", mainPanel);
 
+        JMenuItem searchItem = new JMenuItem("Search");
+        searchItem.addActionListener(actionEvent -> {
+            searchBar.setVisible(!searchBar.isVisible());
+            searchBar.revalidate();
+            searchBar.repaint();
 
-        JMenu searchMenu = new JMenu("Search");
-        searchMenu.setMnemonic(KeyEvent.VK_S);
+        });
+        searchItem.setMnemonic(KeyEvent.VK_S);
 
-        JMenuItem eMenuItem = new JMenuItem("Exit");
-        eMenuItem.setMnemonic(KeyEvent.VK_E);
-        eMenuItem.setToolTipText("Exit application");
-        eMenuItem.addActionListener((event) -> System.exit(0));
+        JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.setMnemonic(KeyEvent.VK_E);
+        exitItem.setToolTipText("Exit application");
+        exitItem.addActionListener((event) -> System.exit(0));
 
         JMenuItem newWindowItem = new JMenuItem("New Window");
         newWindowItem.setMnemonic(KeyEvent.VK_N);
@@ -120,33 +130,23 @@ public class FileManagerGui {
 
 
         fileMenu.add(newWindowItem);
-        fileMenu.add(eMenuItem);
+        fileMenu.add(exitItem);
 
         menuBar.add(fileMenu);
         menuBar.add(eMenu);
-        menuBar.add(searchMenu);
+        menuBar.add(searchItem);
 
     }
 
     private void setFavoritesPanel() {
         favoritesPanel = new JPanel();
-        favoritesPanel.setLayout(new git(6, 1));
-        //add components (buttons) to buttons panel
-//        JPanel insertionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-//        insertionPanel.add(insertionButton);
-        JButton insertionButton = new JButton("Insertion Sort");
-        JButton selectionButton = new JButton("Selection Sort");
-        JButton quickButton = new JButton("Quick Sort");
-        JButton mergeButton = new JButton("Merge Sort");
-        JButton heapButton = new JButton("Heap Sort");
-        JButton radixButton = new JButton("Radix Sort");
+        favoritesPanel.setLayout(new BoxLayout(favoritesPanel, BoxLayout.Y_AXIS));
+        JLabel logo = new JLabel();
+        logo.setBackground(Color.cyan);
+        logo.setIcon(new ImageIcon("./logo-icon.png"));
+        favoritesPanel.add(logo);
+        favoritesPanel.add(Box.createVerticalStrut(5));
 
-        favoritesPanel.add(insertionButton);
-        favoritesPanel.add(selectionButton);
-        favoritesPanel.add(quickButton);
-        favoritesPanel.add(mergeButton);
-        favoritesPanel.add(heapButton);
-        favoritesPanel.add(radixButton);
     }
 
     private void setSearchBar() {
@@ -158,14 +158,14 @@ public class FileManagerGui {
         JButton searchBarButton = new JButton("Search");
         searchBar.add(searchField, BorderLayout.CENTER);
         searchBar.add(searchBarButton, BorderLayout.EAST);
+        searchBar.setVisible(false);
     }
 
     private void setPathBar() {
-        //properties
+
         pathBar = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 0));
         pathBar.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-//        pathBar.setOpaque(false);
-        pathBar.setBackground(Color.YELLOW);//for demonstration purpose
+        pathBar.setBackground(Color.GRAY);//for demonstration purpose
     }
 
     private void setContentsPanel() {

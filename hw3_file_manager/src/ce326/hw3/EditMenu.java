@@ -36,26 +36,16 @@ public class EditMenu extends JMenu {
         //rename option
         JMenuItem[] items = createEditItems();
 
-        for (JMenuItem i:items) {
+        for (JMenuItem i : items) {
             add(i);
         }
 
         popUpEdit = new JPopupMenu();
 
         JMenuItem[] popItems = createEditItems();
-        for (JMenuItem i:popItems) {
+        for (JMenuItem i : popItems) {
             popUpEdit.add(i);
         }
-
-//        add(renameItem);
-//        add(copyItem);
-//        add(cutItem);
-//        add(pasteItem);
-//        add(deleteItem);
-//        add(addToFavoritesItem);
-//        add(propertiesItem);
-
-
     }
 
     private JMenuItem[] createEditItems() {
@@ -118,6 +108,13 @@ public class EditMenu extends JMenu {
 
         JMenuItem addToFavoritesItem = new JMenuItem("Add to Favorites");
         addToFavoritesItem.setToolTipText("Add a directory to the Favorites panel");
+        addToFavoritesItem.addActionListener(actionEvent -> {
+            if (!selectedFile.isDirectory()) {
+                JOptionPane.showMessageDialog(mainPanel, "Not a directory", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                contentsToUpdate.setFavorite(selectedFile, false);
+            }
+        });
         editItems[5] = addToFavoritesItem;
 
         JMenuItem propertiesItem = new JMenuItem("Properties");
@@ -133,7 +130,6 @@ public class EditMenu extends JMenu {
 
     public void showAsPopUp(JComponent panel, int posX, int posY) {
 
-//        panel.add(popUpEdit);
         popUpEdit.show(panel, posX, posY);
     }
 

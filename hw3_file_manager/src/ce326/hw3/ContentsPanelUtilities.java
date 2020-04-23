@@ -10,16 +10,19 @@ import java.util.Comparator;
 public class ContentsPanelUtilities {
     //    ArrayList<File> stack;
     private JPanel container;
+    private JPanel favorites;
     private JPanel breadCrumb;
     private JFrame frame;
     private EditMenu editMenu;
+    private FavoritesInXML xmlFavorites;
     ButtonGroup bg;
 
-    public ContentsPanelUtilities(JPanel contentsPanel, JPanel breadCrumbPanel, EditMenu menuBar,JFrame mainFrame) {
+    public ContentsPanelUtilities(JPanel contentsPanel, JPanel breadCrumbPanel, EditMenu menuBar, FavoritesInXML xmlFile, JPanel favoritesPanel) {
         container = contentsPanel;
         breadCrumb = breadCrumbPanel;
-        frame = mainFrame;
+        favorites = favoritesPanel;
         editMenu = menuBar;
+        xmlFavorites = xmlFile;
     }
 
     public void browseDirectory(String dir) {
@@ -56,8 +59,7 @@ public class ContentsPanelUtilities {
                         editMenu.setEnabled(true);
                         editMenu.setSelectedFile(s1, contentsToUpdate);
                         btn.setContentAreaFilled(true);
-                    }
-                    else {
+                    } else {
                         btn.setContentAreaFilled(false);
                         editMenu.setEnabled(false);
                     }
@@ -72,7 +74,7 @@ public class ContentsPanelUtilities {
                                                      try {
                                                          Desktop.getDesktop().open(s1);
                                                      } catch (Exception ex) {
-                                                         JOptionPane.showMessageDialog(frame.getRootPane(), "Cant open the file!", "Sorry", JOptionPane.ERROR_MESSAGE);
+                                                         JOptionPane.showMessageDialog(container, "Cant open the file!", "Sorry", JOptionPane.ERROR_MESSAGE);
 //                                Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
                                                      }
                                                  } else {
@@ -85,8 +87,7 @@ public class ContentsPanelUtilities {
                                                      container.repaint();
 
                                                  }
-                                             }
-                                             else if (e.getButton() == MouseEvent.BUTTON3) {
+                                             } else if (e.getButton() == MouseEvent.BUTTON3) {
                                                  btn.setSelected(true);
                                                  editMenu.showAsPopUp(btn, e.getX(), e.getY());
                                              }
@@ -145,8 +146,6 @@ public class ContentsPanelUtilities {
         boolean isLastInPath = true;
         while (file != null) {
             JButton btn = new JButton();
-//            btn.setContentAreaFilled(false);
-//            btn.setBorderPainted(false);
             String btnText;
             if (file.getName().length() > 0) {
                 btnText = file.getName();
@@ -154,9 +153,13 @@ public class ContentsPanelUtilities {
                 btnText = file.getPath().substring(0, 1);
             }
             btn.setText(btnText);
-
+            btn.setForeground(Color.white);
+            btn.setContentAreaFilled(false);
+            btn.setFocusable(false);
             if (isLastInPath) {
-                breadCrumb.add(new JLabel(btnText), 0);
+                JLabel currentDirLabel = new JLabel(btnText);
+                currentDirLabel.setForeground(Color.WHITE);
+                breadCrumb.add(currentDirLabel, 0);
 
                 isLastInPath = false;
 
@@ -172,7 +175,9 @@ public class ContentsPanelUtilities {
 
                     }
                 });
-                breadCrumb.add(new JLabel(">"), 0);
+                JLabel separator = new JLabel(">");
+                separator.setForeground(Color.WHITE);
+                breadCrumb.add(separator, 0);
                 breadCrumb.add(btn, 0);
                 breadCrumb.revalidate();
                 breadCrumb.repaint();
@@ -184,6 +189,71 @@ public class ContentsPanelUtilities {
 
 
     }
+
+    public void initFavorites(File[]existingFiles, String initFilePath) {
+        File initFile = new File(initFilePath);
+        JButton entry = new JButton(initFile.getName());
+        entry.setBackground(Color.GRAY);
+        entry.setForeground(Color.WHITE);
+        entry.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    updateCurrentDirectory(initFile);
+                }
+            }
+
+        });
+        favorites.add(entry);
+        favorites.add(Box.createVerticalStrut(20));
+
+
+        for (File f:existingFiles) {
+            setFavorite(f,true);
+        }
+    }
+
+    private void removeFavorite(String filePath, JButton buttonToRemove) {
+        xmlFavorites.removeEntry(filePath);
+        favorites.remove(buttonToRemove);
+        favorites.revalidate();
+        favorites.repaint();
+    }
+
+    public void setFavorite(File dir, boolean existsInXML) {
+        JButton entry = new JButton(dir.getName());
+        entry.setForeground(Color.WHITE);
+        entry.setBackground(Color.GRAY);
+        JPopupMenu removePopUp = new JPopupMenu();
+        JMenuItem removeItem = new JMenuItem("Remove from Favorites");
+        removeItem.addActionListener(actionEvent -> removeFavorite(dir.getAbsolutePath(), entry));
+        removePopUp.add(removeItem);
+
+        if (!existsInXML) {
+            xmlFavorites.addToXML(dir.getName(), dir.getPath());
+        }
+        entry.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    updateCurrentDirectory(dir);
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    removePopUp.show(entry, e.getX(), e.getY());
+
+                }
+            }
+
+        });
+
+
+        favorites.add(entry);
+        favorites.add(Box.createVerticalStrut(20));
+
+        favorites.revalidate();
+        favorites.repaint();
+
+    }
+
     public void updateCurrentDirectory(File currentDirectory) {
         setBreadCrumb(currentDirectory);
         container.removeAll();
