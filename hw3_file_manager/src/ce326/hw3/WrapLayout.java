@@ -3,14 +3,18 @@ package ce326.hw3;
 import javax.swing.*;
 import java.awt.*;
 
-public class AdaptiveGridLayout extends FlowLayout {
+/**
+ *  FlowLayout subclass that fully supports wrapping of components.
+ */
+public class WrapLayout extends FlowLayout
+{
     private Dimension preferredLayoutSize;
 
     /**
      * Constructs a new <code>WrapLayout</code> with a left
      * alignment and a default 5-unit horizontal and vertical gap.
      */
-    public AdaptiveGridLayout()
+    public WrapLayout()
     {
         super();
     }
@@ -23,7 +27,7 @@ public class AdaptiveGridLayout extends FlowLayout {
      * or <code>WrapLayout</code>.
      * @param align the alignment value
      */
-    public AdaptiveGridLayout(int align)
+    public WrapLayout(int align)
     {
         super(align);
     }
@@ -39,7 +43,7 @@ public class AdaptiveGridLayout extends FlowLayout {
      * @param hgap the horizontal gap between components
      * @param vgap the vertical gap between components
      */
-    public AdaptiveGridLayout(int align, int hgap, int vgap)
+    public WrapLayout(int align, int hgap, int vgap)
     {
         super(align, hgap, vgap);
     }

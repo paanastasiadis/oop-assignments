@@ -18,6 +18,7 @@ public class FileManagerGui {
 
     private EditMenu eMenu;
     private FavoritesInXML xmlfavorites;
+    private ContentsPanelUtilities contents;
 
 
     public FileManagerGui() {
@@ -52,18 +53,18 @@ public class FileManagerGui {
         rightPanel.setLayout(gbl_rightPanel);
 
         GridBagConstraints gbcSearchBar = new GridBagConstraints();
-        gbcSearchBar.fill = GridBagConstraints.HORIZONTAL;
+        gbcSearchBar.fill = GridBagConstraints.BOTH;
 //        gbcSearchBar.insets = new Insets(0, 0, 5, 0);
 //        gbcSearchBar.weightx = 1.0;
-//        gbcSearchBar.weighty = 0.1;
+        gbcSearchBar.weighty = 0.2;
         gbcSearchBar.gridx = 0;
         gbcSearchBar.gridy = 0;
         rightPanel.add(searchBar, gbcSearchBar);
 
         GridBagConstraints gbcPathPanel = new GridBagConstraints();
 //        gbcPathPanel.weightx = 1.0;
-//        gbcPathPanel.weighty = 0.1;
-        gbcPathPanel.fill = GridBagConstraints.HORIZONTAL;
+        gbcPathPanel.weighty = 0.05;
+        gbcPathPanel.fill = GridBagConstraints.BOTH;
 //        gbcPathPanel.insets = new Insets(0, 0, 5, 0);
         gbcPathPanel.gridx = 0;
         gbcPathPanel.gridy = 1;
@@ -73,7 +74,7 @@ public class FileManagerGui {
         gbcBrowser.fill = GridBagConstraints.BOTH;
 //        gbcBrowser.insets = new Insets(0, 0, 5, 0);
         gbcBrowser.weightx = 1.0;
-        gbcBrowser.weighty = 1.0;
+        gbcBrowser.weighty = 0.75;
         gbcBrowser.gridx = 0;
         gbcBrowser.gridy = 2;
 
@@ -84,17 +85,49 @@ public class FileManagerGui {
         mainPanel.add(rightPanel, BorderLayout.CENTER);
 
         xmlfavorites = new FavoritesInXML(System.getProperty("user.home"));
-        ContentsPanelUtilities contents = new ContentsPanelUtilities(contentsPanel, pathBar, eMenu, xmlfavorites, favoritesPanel);
+        contents = new ContentsPanelUtilities(contentsPanel, pathBar, eMenu, xmlfavorites, favoritesPanel);
         contents.browseDirectory(System.getProperty("user.home"));
 
         File initFile = new File(System.getProperty("user.home"));
         contents.setBreadCrumb(initFile);
 
-//        xmlfavorites.addToXML("Documents", "/home/paanastasiadis/Documents");
-//        xmlfavorites.addToXML("Downloads", "/home/paanastasiadis/Downloads");
+
         File[] existingFiles = xmlfavorites.readAllEntries();
         contents.initFavorites(existingFiles, System.getProperty("user.home"));
 
+
+        JPanel searchList = new JPanel(new BorderLayout());
+        DefaultListModel<String> model = new DefaultListModel<>();
+        model.addElement("no entry yet");
+        searchList.add(new JScrollPane(new JList<String>(model)), BorderLayout.CENTER);
+        JTextField textfield = new JTextField(20);
+
+        JButton searchBarButton = new JButton("Search");
+        searchBarButton.addActionListener(actionEvent -> {
+            String inputText = textfield.getText();
+            String type;
+            String fileToSearch;
+            int index = inputText.lastIndexOf(" type:");
+            if ( index != -1) {
+                type = inputText.substring(index + 6);
+                fileToSearch = inputText.substring(0, index);
+            }
+            else {
+                type = null;
+                fileToSearch = inputText;
+            }
+            JList<String> jlist = contents.showSearchResults(fileToSearch.toLowerCase(), type);
+            searchList.removeAll();
+            searchList.add(new JScrollPane(jlist), BorderLayout.CENTER);
+            searchList.revalidate();
+            searchList.repaint();
+
+        });
+        searchBar.add(searchBarButton, BorderLayout.SOUTH);
+        searchBar.add(textfield, BorderLayout.NORTH);
+        searchBar.add(searchList, BorderLayout.CENTER);
+
+        searchBar.setVisible(false);
 
     }
 
@@ -145,7 +178,6 @@ public class FileManagerGui {
         logo.setBackground(Color.cyan);
         logo.setIcon(new ImageIcon("./logo-icon.png"));
         favoritesPanel.add(logo);
-        favoritesPanel.add(Box.createVerticalStrut(5));
 
     }
 
@@ -154,16 +186,15 @@ public class FileManagerGui {
         searchBar.setLayout(new BorderLayout());
         searchBar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         //add components to search panel
-        JTextField searchField = new JTextField();
-        JButton searchBarButton = new JButton("Search");
-        searchBar.add(searchField, BorderLayout.CENTER);
-        searchBar.add(searchBarButton, BorderLayout.EAST);
-        searchBar.setVisible(false);
+//        JTextField searchField = new JTextField(20);
+//
+//        JButton searchBarButton = new JButton("Search");
+
     }
 
     private void setPathBar() {
 
-        pathBar = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 0));
+        pathBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         pathBar.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         pathBar.setBackground(Color.GRAY);//for demonstration purpose
     }
@@ -171,9 +202,10 @@ public class FileManagerGui {
     private void setContentsPanel() {
         contentsPanel = new JPanel();
         contentsPanel.setOpaque(false);
-        contentsPanel.setLayout(new GridLayout(0, 4));
+        contentsPanel.setLayout(new WrapLayout(FlowLayout.LEADING));
 
         scrollingContentsPanel = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollingContentsPanel.setPreferredSize(new Dimension(550, 500));
         scrollingContentsPanel.setViewportView(contentsPanel);
 
     }

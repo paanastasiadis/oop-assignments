@@ -17,12 +17,92 @@ public class ContentsPanelUtilities {
     private FavoritesInXML xmlFavorites;
     ButtonGroup bg;
 
+    private File currentDirectory;
+
     public ContentsPanelUtilities(JPanel contentsPanel, JPanel breadCrumbPanel, EditMenu menuBar, FavoritesInXML xmlFile, JPanel favoritesPanel) {
         container = contentsPanel;
         breadCrumb = breadCrumbPanel;
         favorites = favoritesPanel;
         editMenu = menuBar;
         xmlFavorites = xmlFile;
+    }
+
+
+    public JList<String> showSearchResults(String keyword, String type) {
+
+        DefaultListModel<String> model = new DefaultListModel<>();
+        JList<String> jlist = new JList(model);
+
+        if (keyword.equals("")) {
+            model.addElement("no keyword specified");
+            return jlist;
+        }
+
+        ArrayList<File> matchedFiles = searchFile(currentDirectory, keyword, type);
+
+        if (matchedFiles.size() != 0) {
+
+            jlist.addListSelectionListener(listSelectionEvent -> {
+                String selectedValue = jlist.getSelectedValue();
+                String filePath = selectedValue.substring(selectedValue.lastIndexOf(", ") + 2);
+                File selectedFile = new File(filePath);
+                if (selectedFile.isDirectory()) {
+                    setBreadCrumb(selectedFile);
+                    container.removeAll();
+                    browseDirectory(filePath);
+                    container.revalidate();
+                }
+                else {
+                    try {
+                        Desktop.getDesktop().open(selectedFile);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(container, "Cant open the file!", "Sorry", JOptionPane.ERROR_MESSAGE);
+//                                Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+            });
+
+            for (File matchedFile : matchedFiles) {
+                model.addElement("<strong>" + matchedFile.getName() + "</strong>" + ", " + matchedFile.getAbsolutePath());
+
+            }
+        } else {
+            model.addElement("found nothing");
+        }
+
+        return jlist;
+
+    }
+
+    private ArrayList<File> searchFile(File startingDirectory, String keyword, String type) {
+        ArrayList<File> matchedFiles = new ArrayList<>();
+        File[] files = startingDirectory.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                String nameToCompare = f.getName().toLowerCase();
+                if (type != null && type.equals("dir")) {
+                    if (nameToCompare.contains(keyword) && f.isDirectory()) {
+                        matchedFiles.add(f);
+                    }
+                } else if (type != null) {
+                    int extensionStartPoint = f.getName().lastIndexOf(".");
+                    String fileExtension = f.getName().substring(extensionStartPoint + 1);
+                    if (nameToCompare.contains(keyword) && type.equals(fileExtension)) {
+                        matchedFiles.add(f);
+                    }
+                } else {
+                    if (nameToCompare.contains(keyword)) {
+                        matchedFiles.add(f);
+                    }
+                }
+
+                if (f.isDirectory()) {
+                    matchedFiles.addAll(0, searchFile(f, keyword, type));
+                }
+            }
+        }
+        return matchedFiles;
     }
 
     public void browseDirectory(String dir) {
@@ -34,8 +114,8 @@ public class ContentsPanelUtilities {
             for (File s1 : s) {
                 JToggleButton btn;
 
-                if (s1.getName().length() > 20) {
-                    btn = new JToggleButton(s1.getName().substring(0, 20) + "..");
+                if (s1.getName().length() > 13) {
+                    btn = new JToggleButton(s1.getName().substring(0, 13) + "..");
                 } else {
                     btn = new JToggleButton(s1.getName());
                 }
@@ -93,7 +173,6 @@ public class ContentsPanelUtilities {
                                              }
                                          }
                                      }
-
                 );
 
 
@@ -121,14 +200,21 @@ public class ContentsPanelUtilities {
                 JPanel btnContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 bg.add(folder);
                 btnContainer.add(folder);
+                btnContainer.setPreferredSize(new Dimension(120, 120));
+                btnContainer.setMaximumSize(new Dimension(120, 120));
+                btnContainer.setMinimumSize(new Dimension(120, 120));
                 container.add(btnContainer);
             }
             for (JToggleButton file : files) {
                 JPanel btnContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 bg.add(file);
                 btnContainer.add(file);
+                btnContainer.setPreferredSize(new Dimension(120, 120));
+                btnContainer.setMaximumSize(new Dimension(120, 120));
+                btnContainer.setMinimumSize(new Dimension(120, 120));
                 container.add(btnContainer);
             }
+
             container.revalidate();
             container.repaint();
 //            container.add(bg);
@@ -157,6 +243,7 @@ public class ContentsPanelUtilities {
             btn.setContentAreaFilled(false);
             btn.setFocusable(false);
             if (isLastInPath) {
+                currentDirectory = file;
                 JLabel currentDirLabel = new JLabel(btnText);
                 currentDirLabel.setForeground(Color.WHITE);
                 breadCrumb.add(currentDirLabel, 0);
@@ -190,11 +277,12 @@ public class ContentsPanelUtilities {
 
     }
 
-    public void initFavorites(File[]existingFiles, String initFilePath) {
+    public void initFavorites(File[] existingFiles, String initFilePath) {
         File initFile = new File(initFilePath);
         JButton entry = new JButton(initFile.getName());
         entry.setBackground(Color.GRAY);
         entry.setForeground(Color.WHITE);
+        entry.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         entry.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -208,14 +296,17 @@ public class ContentsPanelUtilities {
         favorites.add(Box.createVerticalStrut(20));
 
 
-        for (File f:existingFiles) {
-            setFavorite(f,true);
+        for (File f : existingFiles) {
+            setFavorite(f, true);
         }
     }
 
     private void removeFavorite(String filePath, JButton buttonToRemove) {
         xmlFavorites.removeEntry(filePath);
+        int pos = favorites.getComponentZOrder(buttonToRemove);
+        favorites.remove(pos + 1); //remove vertical gap element
         favorites.remove(buttonToRemove);
+
         favorites.revalidate();
         favorites.repaint();
     }
@@ -244,7 +335,6 @@ public class ContentsPanelUtilities {
             }
 
         });
-
 
         favorites.add(entry);
         favorites.add(Box.createVerticalStrut(20));
