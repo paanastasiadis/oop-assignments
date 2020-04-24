@@ -18,11 +18,19 @@ public class FavoritesInXML {
     private DOMSource source;
     private DocumentBuilder dBuilder;
     private StreamResult streamFile;
-    private static final String CONFIG_PATH="./properties.xml";
+    private File configFile;
+    private static final String CONFIG_PATH=System.getProperty("user.home") + File.separator +".java-file-browser";
 
     public FavoritesInXML(String defaultEntry) {
-        File configFile = new File(CONFIG_PATH);
 
+
+        configFile = new File(CONFIG_PATH);
+
+        if (!configFile.exists()) {
+            configFile.mkdir();
+        }
+        configFile = new File(CONFIG_PATH + File.separator + "properties.xml");
+        System.out.println(configFile.getAbsolutePath());
         try {
             DocumentBuilderFactory dbFactory =
                     DocumentBuilderFactory.newInstance();
@@ -83,7 +91,7 @@ public class FavoritesInXML {
         File[] entries = new File[0];
         try {
 
-            File fXmlFile = new File(CONFIG_PATH);
+            File fXmlFile = configFile;
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(fXmlFile);

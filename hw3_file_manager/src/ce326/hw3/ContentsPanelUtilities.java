@@ -27,6 +27,18 @@ public class ContentsPanelUtilities {
         xmlFavorites = xmlFile;
     }
 
+//    private void setCurrDirEditMenu() {
+//        ContentsPanelUtilities contentsToUpdate = this;
+//        container.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                if (e.getButton() == MouseEvent.BUTTON3) {
+//                    editMenu.setSelectedFile(currentDirectory, contentsToUpdate);
+//                    editMenu.showAsPopUp(container, e.getX(), e.getY());
+//                }
+//            }
+//        });
+//    }
 
     public JList<String> showSearchResults(String keyword, String type) {
 
@@ -51,8 +63,7 @@ public class ContentsPanelUtilities {
                     container.removeAll();
                     browseDirectory(filePath);
                     container.revalidate();
-                }
-                else {
+                } else {
                     try {
                         Desktop.getDesktop().open(selectedFile);
                     } catch (Exception ex) {
@@ -64,7 +75,7 @@ public class ContentsPanelUtilities {
             });
 
             for (File matchedFile : matchedFiles) {
-                model.addElement("<strong>" + matchedFile.getName() + "</strong>" + ", " + matchedFile.getAbsolutePath());
+                model.addElement(matchedFile.getName() + ", " + matchedFile.getAbsolutePath());
 
             }
         } else {

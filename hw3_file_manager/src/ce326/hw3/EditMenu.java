@@ -138,6 +138,26 @@ public class EditMenu extends JMenu {
         contentsToUpdate = contentsPanel;
     }
 
+    private long getDirSize(File file) {
+        long size = 0;
+        if (file.isDirectory()) {
+            if (file.listFiles() != null) {
+                for (File f : file.listFiles()) {
+                    if (f.isDirectory()) {
+                        size += getDirSize(f);
+                    }
+                    else {
+                        size += f.length();
+                    }
+                }
+            }
+        }
+        else {
+            size += file.length();
+        }
+        return size;
+    }
+
     private void showProperties() {
         StringBuilder propertiesMessage = new StringBuilder();
         propertiesMessage.append("Name: ");
@@ -147,13 +167,9 @@ public class EditMenu extends JMenu {
         propertiesMessage.append(selectedFile.getPath());
         propertiesMessage.append("\n");
         propertiesMessage.append("Size: ");
-        long size = 0;
+        long size;
         if (selectedFile.isDirectory()) {
-            if (selectedFile.listFiles() != null) {
-                for (File f : selectedFile.listFiles()) {
-                    size += f.length();
-                }
-            }
+            size = getDirSize(selectedFile);
         } else {
             size = selectedFile.length();
         }
