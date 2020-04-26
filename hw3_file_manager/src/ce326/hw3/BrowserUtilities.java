@@ -2,121 +2,45 @@ package ce326.hw3;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 
-public class ContentsPanelUtilities {
-    //    ArrayList<File> stack;
-    private JPanel container;
-    private JPanel favorites;
-    private JPanel breadCrumb;
-    private JFrame frame;
-    private EditMenu editMenu;
+public class BrowserUtilities {
+    private final JPanel container;
+    private final JPanel favorites;
+    private final JPanel breadCrumb;
+    private final EditMenu editMenu;
     private FavoritesInXML xmlFavorites;
     ButtonGroup bg;
 
     private File currentDirectory;
 
-    public ContentsPanelUtilities(JPanel contentsPanel, JPanel breadCrumbPanel, EditMenu menuBar, FavoritesInXML xmlFile, JPanel favoritesPanel) {
+    public BrowserUtilities(String startingPath, JPanel contentsPanel, JPanel breadCrumbPanel, EditMenu menuBar, JPanel favoritesPanel) {
         container = contentsPanel;
         breadCrumb = breadCrumbPanel;
         favorites = favoritesPanel;
         editMenu = menuBar;
-        xmlFavorites = xmlFile;
-    }
-
-//    private void setCurrDirEditMenu() {
-//        ContentsPanelUtilities contentsToUpdate = this;
-//        container.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                if (e.getButton() == MouseEvent.BUTTON3) {
-//                    editMenu.setSelectedFile(currentDirectory, contentsToUpdate);
-//                    editMenu.showAsPopUp(container, e.getX(), e.getY());
-//                }
-//            }
-//        });
-//    }
-
-    public JList<String> showSearchResults(String keyword, String type) {
-
-        DefaultListModel<String> model = new DefaultListModel<>();
-        JList<String> jlist = new JList(model);
-
-        if (keyword.equals("")) {
-            model.addElement("no keyword specified");
-            return jlist;
-        }
-
-        ArrayList<File> matchedFiles = searchFile(currentDirectory, keyword, type);
-
-        if (matchedFiles.size() != 0) {
-
-            jlist.addListSelectionListener(listSelectionEvent -> {
-                String selectedValue = jlist.getSelectedValue();
-                String filePath = selectedValue.substring(selectedValue.lastIndexOf(", ") + 2);
-                File selectedFile = new File(filePath);
-                if (selectedFile.isDirectory()) {
-                    setBreadCrumb(selectedFile);
-                    container.removeAll();
-                    browseDirectory(filePath);
-                    container.revalidate();
-                } else {
-                    try {
-                        Desktop.getDesktop().open(selectedFile);
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(container, "Cant open the file!", "Sorry", JOptionPane.ERROR_MESSAGE);
-//                                Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-
-            });
-
-            for (File matchedFile : matchedFiles) {
-                model.addElement(matchedFile.getName() + ", " + matchedFile.getAbsolutePath());
-
-            }
-        } else {
-            model.addElement("found nothing");
-        }
-
-        return jlist;
+        currentDirectory = new File(startingPath);
 
     }
 
-    private ArrayList<File> searchFile(File startingDirectory, String keyword, String type) {
-        ArrayList<File> matchedFiles = new ArrayList<>();
-        File[] files = startingDirectory.listFiles();
-        if (files != null) {
-            for (File f : files) {
-                String nameToCompare = f.getName().toLowerCase();
-                if (type != null && type.equals("dir")) {
-                    if (nameToCompare.contains(keyword) && f.isDirectory()) {
-                        matchedFiles.add(f);
-                    }
-                } else if (type != null) {
-                    int extensionStartPoint = f.getName().lastIndexOf(".");
-                    String fileExtension = f.getName().substring(extensionStartPoint + 1);
-                    if (nameToCompare.contains(keyword) && type.equals(fileExtension)) {
-                        matchedFiles.add(f);
-                    }
-                } else {
-                    if (nameToCompare.contains(keyword)) {
-                        matchedFiles.add(f);
-                    }
-                }
+    //initialize files view, favorites panel and breadcrumb
+    public void initNavigation() {
 
-                if (f.isDirectory()) {
-                    matchedFiles.addAll(0, searchFile(f, keyword, type));
-                }
-            }
-        }
-        return matchedFiles;
+        createFilesView(currentDirectory.getAbsolutePath());
+        setBreadCrumb(currentDirectory);
+
+        xmlFavorites = new FavoritesInXML();
+        File[] existingFiles = xmlFavorites.readAllXMLEntries();
+        this.initFavorites(existingFiles, currentDirectory.getAbsolutePath());
     }
 
-    public void browseDirectory(String dir) {
+
+    //create the contents of the files view
+    public void createFilesView(String dir) {
         File f = new File(dir);
         File[] s = f.listFiles();
         ArrayList<JToggleButton> folders = new ArrayList<JToggleButton>();
@@ -125,26 +49,30 @@ public class ContentsPanelUtilities {
             for (File s1 : s) {
                 JToggleButton btn;
 
+                //shorten the name with dots in the end if it is too big
                 if (s1.getName().length() > 13) {
                     btn = new JToggleButton(s1.getName().substring(0, 13) + "..");
                 } else {
                     btn = new JToggleButton(s1.getName());
                 }
+
                 if (s1.isFile()) {
                     files.add(btn);
 
                 } else {
                     folders.add(btn);
                 }
-                btn.setIcon(getTypeIcon(s1));
 
+                //configure the characteristics of the button
+                btn.setIcon(getTypeIcon(s1));
                 btn.setBorderPainted(false);
                 btn.setContentAreaFilled(false);
                 btn.setVerticalTextPosition(SwingConstants.BOTTOM);
                 btn.setHorizontalTextPosition(SwingConstants.CENTER);
                 btn.setFocusable(false);
 
-                ContentsPanelUtilities contentsToUpdate = this;
+                //mark the button if it is selected and enable Edit Menu options
+                BrowserUtilities contentsToUpdate = this;
                 btn.addItemListener(itemEvent -> {
                     if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
                         editMenu.setEnabled(true);
@@ -155,30 +83,36 @@ public class ContentsPanelUtilities {
                         editMenu.setEnabled(false);
                     }
                 });
+
+                //configure actions for the left and right mouse clicks on the button
                 btn.addMouseListener(new MouseAdapter() {
                                          @Override
                                          public void mouseClicked(MouseEvent e) {
+                                             //action happens on double left click
+                                             // nothing happens with a single click
                                              if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-//                                                 editMenu.setEnabled(false);
 
+                                                 //if a file, try to open it with default system app
                                                  if (s1.isFile()) {
                                                      try {
                                                          Desktop.getDesktop().open(s1);
                                                      } catch (Exception ex) {
                                                          JOptionPane.showMessageDialog(container, "Cant open the file!", "Sorry", JOptionPane.ERROR_MESSAGE);
-//                                Logger.getLogger(MainPanel.class.getName()).log(Level.SEVERE, null, ex);
                                                      }
                                                  } else {
 
+                                                     //if a folder, access it by updating the current files view
+                                                     //update also the breadcrumb
                                                      setBreadCrumb(s1);
                                                      container.removeAll();
                                                      container.revalidate();
-                                                     browseDirectory(s1.getAbsolutePath());
+                                                     createFilesView(s1.getAbsolutePath());
                                                      container.revalidate();
                                                      container.repaint();
 
                                                  }
                                              } else if (e.getButton() == MouseEvent.BUTTON3) {
+                                                 //for right click, show the edit menu as pop up
                                                  btn.setSelected(true);
                                                  editMenu.showAsPopUp(btn, e.getX(), e.getY());
                                              }
@@ -188,60 +122,57 @@ public class ContentsPanelUtilities {
 
 
             }
+            //sort the buttons by alphabetic order
+            folders.sort((jButton, t1) -> jButton.getText().compareToIgnoreCase(t1.getText()));
+            files.sort((jButton, t1) -> jButton.getText().compareToIgnoreCase(t1.getText()));
 
-            folders.sort(new Comparator<JToggleButton>() {
-                @Override
-                public int compare(JToggleButton jButton, JToggleButton t1) {
-
-                    return jButton.getText().compareToIgnoreCase(t1.getText());
-                }
-            });
-
-            files.sort(new Comparator<JToggleButton>() {
-                @Override
-                public int compare(JToggleButton jButton, JToggleButton t1) {
-
-                    return jButton.getText().compareToIgnoreCase(t1.getText());
-                }
-            });
-
-
+            //add the buttons on the button group to disable multiple selection of a files
             bg = new ButtonGroup();
-            for (JToggleButton folder : folders) {
-                JPanel btnContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-                bg.add(folder);
-                btnContainer.add(folder);
-                btnContainer.setPreferredSize(new Dimension(120, 120));
-                btnContainer.setMaximumSize(new Dimension(120, 120));
-                btnContainer.setMinimumSize(new Dimension(120, 120));
-                container.add(btnContainer);
-            }
-            for (JToggleButton file : files) {
-                JPanel btnContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-                bg.add(file);
-                btnContainer.add(file);
-                btnContainer.setPreferredSize(new Dimension(120, 120));
-                btnContainer.setMaximumSize(new Dimension(120, 120));
-                btnContainer.setMinimumSize(new Dimension(120, 120));
-                container.add(btnContainer);
-            }
+            createFileButtons(folders);
+            createFileButtons(files);
 
             container.revalidate();
             container.repaint();
-//            container.add(bg);
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(frame.getRootPane(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(container.getRootPane(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    //add a container around every button for better orientation between them
+    private void createFileButtons(ArrayList<JToggleButton> buttonsList) {
+        for (JToggleButton btn : buttonsList) {
+            JPanel btnContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            bg.add(btn);
+            btnContainer.add(btn);
+            btnContainer.setPreferredSize(new Dimension(120, 120));
+            btnContainer.setMaximumSize(new Dimension(120, 120));
+            btnContainer.setMinimumSize(new Dimension(120, 120));
+            container.add(btnContainer);
+        }
+    }
 
-    public void setBreadCrumb(File file) {
+    //update files view and breadcrumb with the newly specified directory
+    public void updateCurrentDirectory(File currentDirectory) {
+        setBreadCrumb(currentDirectory);
+        container.removeAll();
+        createFilesView(currentDirectory.getAbsolutePath());
+        container.revalidate();
+        container.repaint();
+
+    }
+
+    //set the breadcrumb for the currently displayed directory
+    private void setBreadCrumb(File file) {
         bg.clearSelection();
         breadCrumb.removeAll();
         breadCrumb.revalidate();
+
         boolean isLastInPath = true;
+
+
         while (file != null) {
+
             JButton btn = new JButton();
             String btnText;
             if (file.getName().length() > 0) {
@@ -249,11 +180,16 @@ public class ContentsPanelUtilities {
             } else {
                 btnText = file.getPath().substring(0, 1);
             }
+
+            //assign traits for every button in the breadcrumb
             btn.setText(btnText);
             btn.setForeground(Color.white);
             btn.setContentAreaFilled(false);
             btn.setFocusable(false);
+
             if (isLastInPath) {
+                //for the last point in the breadcrumb we assign a label instead of a button
+                //A button would be meaningless because the last point is the current directory
                 currentDirectory = file;
                 JLabel currentDirLabel = new JLabel(btnText);
                 currentDirLabel.setForeground(Color.WHITE);
@@ -263,16 +199,13 @@ public class ContentsPanelUtilities {
 
             } else {
                 File finalFile = file;
-                btn.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        setBreadCrumb(finalFile);
-                        container.removeAll();
-                        browseDirectory(finalFile.getAbsolutePath());
-                        container.revalidate();
-
-                    }
+                btn.addActionListener(actionEvent -> {
+                    setBreadCrumb(finalFile);
+                    container.removeAll();
+                    createFilesView(finalFile.getAbsolutePath());
+                    container.revalidate();
                 });
+                //assign in between the buttons a separation ">" label
                 JLabel separator = new JLabel(">");
                 separator.setForeground(Color.WHITE);
                 breadCrumb.add(separator, 0);
@@ -280,15 +213,14 @@ public class ContentsPanelUtilities {
                 breadCrumb.revalidate();
                 breadCrumb.repaint();
             }
-
-
+            //make a button for every point in the path
             file = file.getParentFile();
         }
-
-
     }
 
-    public void initFavorites(File[] existingFiles, String initFilePath) {
+    private void initFavorites(File[] existingFiles, String initFilePath) {
+
+        //assign a default irremovable entry in the favorites panel, the link for the home directory
         File initFile = new File(initFilePath);
         JButton entry = new JButton(initFile.getName());
         entry.setBackground(Color.GRAY);
@@ -306,14 +238,16 @@ public class ContentsPanelUtilities {
         favorites.add(entry);
         favorites.add(Box.createVerticalStrut(20));
 
-
+        //search the favorites xml file to add favorite links for the stored entries
         for (File f : existingFiles) {
             setFavorite(f, true);
         }
     }
 
+    //remove an entry from both the xml file and the favorites panel
     private void removeFavorite(String filePath, JButton buttonToRemove) {
         xmlFavorites.removeEntry(filePath);
+
         int pos = favorites.getComponentZOrder(buttonToRemove);
         favorites.remove(pos + 1); //remove vertical gap element
         favorites.remove(buttonToRemove);
@@ -322,7 +256,9 @@ public class ContentsPanelUtilities {
         favorites.repaint();
     }
 
+    //add the specified directory to the favorites panel and store it to the xml file
     public void setFavorite(File dir, boolean existsInXML) {
+
         JButton entry = new JButton(dir.getName());
         entry.setForeground(Color.WHITE);
         entry.setBackground(Color.GRAY);
@@ -331,9 +267,11 @@ public class ContentsPanelUtilities {
         removeItem.addActionListener(actionEvent -> removeFavorite(dir.getAbsolutePath(), entry));
         removePopUp.add(removeItem);
 
+        //store it to the xml if it is not already stored
         if (!existsInXML) {
             xmlFavorites.addToXML(dir.getName(), dir.getPath());
         }
+        //add remove option for a right click action
         entry.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -355,16 +293,94 @@ public class ContentsPanelUtilities {
 
     }
 
-    public void updateCurrentDirectory(File currentDirectory) {
-        setBreadCrumb(currentDirectory);
-        container.removeAll();
-        browseDirectory(currentDirectory.getAbsolutePath());
-        container.revalidate();
-        container.repaint();
+    //show the search results for the specified keyword and type
+    public JList<String> showSearchResults(String keyword, String type) {
+
+        DefaultListModel<String> model = new DefaultListModel<String>();
+        JList<String> jlist = new JList<String>(model);
+
+        //if keyword is nothing display a list with a relevant message
+        if (keyword.equals("")) {
+            model.addElement("no keyword specified");
+            return jlist;
+        }
+
+        //search recursively for matched files starting from the current directory
+        ArrayList<File> matchedFiles = searchFile(currentDirectory, keyword, type);
+
+        if (matchedFiles.size() != 0) {
+
+            //make the search results in the list clickable
+
+            jlist.addListSelectionListener(listSelectionEvent -> {
+                String selectedValue = jlist.getSelectedValue();
+                String filePath = selectedValue.substring(selectedValue.lastIndexOf(", ") + 2);
+                File selectedFile = new File(filePath);
+
+                if (selectedFile.isDirectory()) {
+                    setBreadCrumb(selectedFile);
+                    container.removeAll();
+                    createFilesView(filePath);
+                    container.revalidate();
+                } else {
+                    try {
+                        Desktop.getDesktop().open(selectedFile);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(container, "Cant open the file!", "Sorry", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+
+            });
+            //display the name and the path for every matched file or directory
+            for (File matchedFile : matchedFiles) {
+                model.addElement(matchedFile.getName() + ", " + matchedFile.getAbsolutePath());
+
+            }
+        } else {
+            model.addElement("found nothing");
+        }
+
+        return jlist;
 
     }
 
-    private Icon getTypeIcon(File file) {
+    //search recursively for matched files starting from the current directory
+    private ArrayList<File> searchFile(File startingDirectory, String keyword, String type) {
+        ArrayList<File> matchedFiles = new ArrayList<>();
+        File[] files = startingDirectory.listFiles();
+
+        if (files != null) {
+            for (File f : files) {
+                String nameToCompare = f.getName().toLowerCase();
+
+                //for type = dir search only for directories
+                if (type != null && type.equals("dir")) {
+                    if (nameToCompare.contains(keyword) && f.isDirectory()) {
+                        matchedFiles.add(f);
+                    }
+                } else if (type != null) { //for other type options search the files with the matching extensions
+                    int extensionStartPoint = f.getName().lastIndexOf(".");
+                    String fileExtension = f.getName().substring(extensionStartPoint + 1);
+                    if (nameToCompare.contains(keyword) && type.equals(fileExtension)) {
+                        matchedFiles.add(f);
+                    }
+                } else { //for no type search everything
+                    if (nameToCompare.contains(keyword)) {
+                        matchedFiles.add(f);
+                    }
+                }
+
+                //search all the folders recursively
+                if (f.isDirectory()) {
+                    matchedFiles.addAll(0, searchFile(f, keyword, type));
+                }
+            }
+        }
+        return matchedFiles;
+    }
+
+    //assign the right icon for different file extensions
+    private static Icon getTypeIcon(File file) {
         if (file.isDirectory()) {
             return new ImageIcon("./icons/folder.png");
         }
@@ -399,7 +415,6 @@ public class ContentsPanelUtilities {
                 return new ImageIcon("./icons/ods.png");
             case "odt":
                 return new ImageIcon("./icons/odt.png");
-
             case "ogg":
                 return new ImageIcon("./icons/ogg.png");
             case "pdf":

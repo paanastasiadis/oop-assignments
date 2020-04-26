@@ -1,10 +1,7 @@
 package ce326.hw3;
 
+//The main class or the way to run the FileBrowser app
 public class FileManager {
-
-    private static void createAndShowGUI() {
-        //Create and set up the window.
-    }
 
     public static void main(String[] args) {
         //Schedule a job for the event-dispatching thread:

@@ -16,31 +16,31 @@ public class FavoritesInXML {
     private Document doc;
     private Transformer transformer;
     private DOMSource source;
-    private DocumentBuilder dBuilder;
     private StreamResult streamFile;
     private File configFile;
-    private static final String CONFIG_PATH=System.getProperty("user.home") + File.separator +".java-file-browser";
+    private static final String CONFIG_PATH = System.getProperty("user.home") + File.separator + ".java-file-browser";
 
-    public FavoritesInXML(String defaultEntry) {
-
+    public FavoritesInXML() {
 
         configFile = new File(CONFIG_PATH);
 
+        //if the folder does not exist in the home direcotry of the user, create it
         if (!configFile.exists()) {
             configFile.mkdir();
         }
+
+        //add the properties filename to the path
         configFile = new File(CONFIG_PATH + File.separator + "properties.xml");
-        System.out.println(configFile.getAbsolutePath());
         try {
             DocumentBuilderFactory dbFactory =
                     DocumentBuilderFactory.newInstance();
-            dBuilder = dbFactory.newDocumentBuilder();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
 
             if (configFile.exists()) {
                 doc = dBuilder.parse(configFile);
                 rootFavorites = doc.getDocumentElement();
-            }
-            else {
+            } else {
                 doc = dBuilder.newDocument();
 
                 // favorites element
@@ -60,34 +60,8 @@ public class FavoritesInXML {
         }
     }
 
-    public void removeEntry(String filePath) {
-        NodeList nList = doc.getElementsByTagName("directory");
-
-        for (int i = 0; i < nList.getLength(); i++) {
-
-            Node nNode = nList.item(i);
-            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-
-                Element eElement = (Element) nNode;
-                System.out.println(filePath);
-                System.out.println(eElement.getAttribute("path"));
-
-                if (eElement.getAttribute("path").equals(filePath)) {
-                    System.out.println("Done");
-                    nNode.getParentNode().removeChild(nNode);
-                }
-                try {
-                    transformer.transform(source, streamFile);
-                } catch (TransformerException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-
-    }
-
-    public File[] readAllEntries() {
+    //read all the file entries inside the xml file
+    public File[] readAllXMLEntries() {
         File[] entries = new File[0];
         try {
 
@@ -98,8 +72,6 @@ public class FavoritesInXML {
 
             doc.getDocumentElement().normalize();
 
-            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-
             NodeList nList = doc.getElementsByTagName("directory");
             entries = new File[nList.getLength()];
 
@@ -107,14 +79,11 @@ public class FavoritesInXML {
 
                 Node nNode = nList.item(i);
 
-                System.out.println("\nCurrent Element :" + nNode.getNodeName());
-
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
                     Element eElement = (Element) nNode;
 
                     entries[i] = new File(eElement.getAttribute("path"));
-                    System.out.println("Name : " + eElement.getElementsByTagName("name").item(0).getTextContent());
 
                 }
             }
@@ -126,6 +95,7 @@ public class FavoritesInXML {
 
     }
 
+    //store a new entry to the xml file
     public void addToXML(String dirName, String dirPath) {
         Element dirElement = doc.createElement("directory");
         rootFavorites.appendChild(dirElement);
@@ -147,4 +117,28 @@ public class FavoritesInXML {
 
     }
 
+    //delete a file entry in the xml file
+    public void removeEntry(String filePath) {
+        NodeList nList = doc.getElementsByTagName("directory");
+
+        for (int i = 0; i < nList.getLength(); i++) {
+
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+
+                Element eElement = (Element) nNode;
+
+                if (eElement.getAttribute("path").equals(filePath)) {
+                    nNode.getParentNode().removeChild(nNode);
+                }
+                try {
+                    transformer.transform(source, streamFile);
+                } catch (TransformerException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+    }
 }
