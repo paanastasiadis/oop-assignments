@@ -4,6 +4,7 @@
 *.out
 *kotlin_module
 *.vscode
+*bin
 
 # Prerequisites
 *.d
