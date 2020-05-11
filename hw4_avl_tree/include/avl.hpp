@@ -13,20 +13,28 @@ private:
     int height;
     string element;
 
+    //    #
+    //   # #   #####  #####  ###### #####     #####  #   #    #    # ######
+    //  #   #  #    # #    # #      #    #    #    #  # #     ##  ## #
+    // #     # #    # #    # #####  #    #    #####    #      # ## # #####
+    // ####### #    # #    # #      #    #    #    #   #      #    # #
+    // #     # #    # #    # #      #    #    #    #   #      #    # #
+    // #     # #####  #####  ###### #####     #####    #      #    # ######
+    int height_diff;
+
   public:
     Node(const string &e, Node *parent, Node *left, Node *right);
-
     Node *getParent() const;
     Node *getLeft() const;
     Node *getRight() const;
     string getElement() const;
     int getHeight() const;
 
+    int getHeightDiff() const;
     void setLeft(Node *);
     void setRight(Node *);
     void setParent(Node *);
     void setElement(string e);
-    void setHeight(int h);
 
     bool isLeft() const;
     bool isRight() const;
@@ -34,9 +42,18 @@ private:
     int leftChildHeight() const;
     int updateHeight();
     bool isBalanced();
+
+    //    #
+    //   # #   #####  #####  ###### #####     #####  #   #    #    # ######
+    //  #   #  #    # #    # #      #    #    #    #  # #     ##  ## #
+    // #     # #    # #    # #####  #    #    #####    #      # ## # #####
+    // ####### #    # #    # #      #    #    #    #   #      #    # #
+    // #     # #    # #    # #      #    #    #    #   #      #    # #
+    // #     # #####  #####  ###### #####     #####    #      #    # ######
+    int setHeight(Node *temp);
   };
 
-private:
+public:
   int size;
   Node *root;
 
@@ -71,6 +88,24 @@ public:
   AVL &operator-=(const string &e);
   AVL operator+(const string &e);
   AVL operator-(const string &e);
+
+  //    #
+  //   # #   #####  #####  ###### #####     #####  #   #    #    # ######
+  //  #   #  #    # #    # #      #    #    #    #  # #     ##  ## #
+  // #     # #    # #    # #####  #    #    #####    #      # ## # #####
+  // ####### #    # #    # #      #    #    #    #   #      #    # #
+  // #     # #    # #    # #      #    #    #    #   #      #    # #
+  // #     # #####  #####  ###### #####     #####    #      #    # ######
+
+  AVL::Node *insertRecursively(AVL::Node *curr_node, AVL::Node *parent_node,
+                               const string &value);
+  AVL::Node *setBalance(AVL::Node *n);
+
+  AVL::Node *rotateRightRight(AVL::Node *n);
+  AVL::Node *rotateLeftLeft(AVL::Node *n);
+  AVL::Node *rotateLeftRight(AVL::Node *n);
+  AVL::Node *rotateRightLeft(AVL::Node *n);
+  void preorderTraversal(AVL::Node *node, std::ostream &out) const;
 };
 
 #endif
