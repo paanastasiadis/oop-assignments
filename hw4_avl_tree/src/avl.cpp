@@ -134,6 +134,16 @@ AVL::AVL() {
   this->size = 0;
 }
 
+AVL::~AVL() { nodeDeletion(this->root); }
+
+void AVL::nodeDeletion(AVL::Node *node) {
+  if (node == NULL) {
+    return;
+  }
+  nodeDeletion(node->getRight());
+  nodeDeletion(node->getLeft());
+  delete node;
+}
 AVL::AVL(const AVL &avl_tree) {
 
   // TODO create a new Node object instead of passing the pointer
@@ -151,6 +161,31 @@ bool AVL::add(string e) {
   } else {
     return true;
   }
+}
+
+bool AVL::contains(string e) {
+  AVL::Node *node;
+  node = findRecursively(this->root, e);
+
+  if (node == NULL) {
+    return false;
+  } else {
+    return true;
+  }
+}
+AVL::Node *AVL::findRecursively(AVL::Node *curr_node, const string &value) {
+  if (curr_node == NULL) {
+    return NULL;
+  } else if (value.compare(curr_node->getElement()) == 0) {
+
+    return curr_node;
+  } else if (value < curr_node->getElement()) {
+    curr_node = findRecursively(curr_node->getLeft(), value);
+
+  } else if (value >= curr_node->getElement()) {
+    curr_node = findRecursively(curr_node->getRight(), value);
+  }
+  return curr_node;
 }
 
 AVL::Node *AVL::insertRecursively(AVL::Node *curr_node, AVL::Node *parent_node,
@@ -302,8 +337,9 @@ AVL::Node *AVL::rotateRightLeft(AVL::Node *n) {
 }
 
 void AVL::preorderTraversal(AVL::Node *node, std::ostream &out) const {
-  if (node == NULL)
+  if (node == NULL) {
     return;
+  }
   out << node->getElement() << " ";
   preorderTraversal(node->getLeft(), out);
   preorderTraversal(node->getRight(), out);
@@ -311,9 +347,49 @@ void AVL::preorderTraversal(AVL::Node *node, std::ostream &out) const {
 
 void AVL::pre_order(std::ostream &out) { preorderTraversal(this->root, out); }
 
+void AVL::preorderDotTraversal(AVL::Node *node, std::ostream &out) const {
+  if (node == NULL) {
+    return;
+  }
+  if (node == this->root) {
+    out << node->getElement();
+    out << " [label = \"";
+    out << node->getElement();
+    out << "\", shape=egg, ";
+    out << "color=red, style=filled]" << endl;
+  } else {
+    out << node->getParent()->getElement();
+    out << " -- ";
+    out << node->getElement() << endl;
+    out << node->getElement();
+    out << " [label = \"";
+    out << node->getElement();
+    out << "\", shape=egg, ";
+    out << "color=red, style=filled]" << endl;
+  }
+
+  preorderDotTraversal(node->getLeft(), out);
+  preorderDotTraversal(node->getRight(), out);
+}
+
+void AVL::print2DotFile(char *filename) {
+
+  ofstream fout(filename);
+  fout << "graph Trie {" << endl;
+  preorderDotTraversal(this->root, fout);
+  fout << "}" << endl;
+}
+
 std::ostream &operator<<(std::ostream &out, const AVL &tree) {
 
   tree.preorderTraversal(tree.root, out);
 
   return out;
+}
+
+void AVL::preorderCopy(AVL::Node *copy_node, AVL::Node *node) {
+  if (node == NULL) {
+
+    return;
+  }
 }

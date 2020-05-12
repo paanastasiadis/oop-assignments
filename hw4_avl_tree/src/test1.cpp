@@ -6,29 +6,36 @@
 int main(int argc, char *argv[]) {
 
   AVL avl;
-  if (argc < 2) {
+  if(argc<2) {
     cout << "\nInsufficient number of arguments. Exiting..." << endl;
     return 0;
   }
-
+    
   ifstream inf(argv[1]);
-  char line[MAX_LINE_LEN];
+  char line[MAX_LINE_LEN]; 
   string words[MAX_ENTRIES];
-
+ 
   if (!inf.is_open()) {
     cout << "Unable to open file " << argv[1];
-    return -1;
+    return -1;    
   }
-
-  int i = 0;
-  while (inf.getline(line, MAX_LINE_LEN)) {
+  
+  int i=0;
+  while ( inf.getline (line, MAX_LINE_LEN) ) {
     words[i] = string(line);
-    // cout << i+1 << ". " << words[i] << endl;
-    bool res  = avl.add(words[i++]);
+    //cout << i+1 << ". " << words[i] << endl;
+    avl.add(words[i++]); 
     cout << avl << endl;
-    if (i == 20)
+    if(i==20)
       cout << "\n##\n" << endl;
   }
-
-  inf.close();
+  
+  char filename[] = "dotavl.dot";
+  avl.print2DotFile(filename);
+  string str = "dot -Tpng ";
+  str = str + filename + " -o " + "dotavl.png";
+  const char *command = str.c_str();
+  system(command);
+  
+  inf.close();  
 }

@@ -26,6 +26,10 @@ run: all
 	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd > tests/test1.out
 	diff tests/test1.out tests/test1.std
 	
+contains_run: all
+	./$(BIN)/$(EXECUTABLE) dicts/small.dict.asc > tests/test2.out
+	diff tests/test2.out tests/test2.std
+	
 myrun: all
 	./$(BIN)/$(EXECUTABLE) dicts/mydict.rnd
 
