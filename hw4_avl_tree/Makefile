@@ -33,6 +33,10 @@ contains_run: all
 myrun: all
 	./$(BIN)/$(EXECUTABLE) dicts/mydict.rnd
 
+delete_run: all
+	./$(BIN)/$(EXECUTABLE)  dicts/small.dict.asc  dicts/small.dict.des > tests/test3.out
+	diff tests/test3.out tests/test3.std
+
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(CINCLUDES) $^ -o $@

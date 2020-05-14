@@ -159,6 +159,7 @@ bool AVL::add(string e) {
   if (node == NULL) {
     return false;
   } else {
+    this->size++;
     return true;
   }
 }
@@ -173,6 +174,18 @@ bool AVL::contains(string e) {
     return true;
   }
 }
+
+bool AVL::rmv(string e) {
+  AVL::Node *node;
+  node = deleteRecursively(this->root, e);
+  
+  if (node == NULL) {
+    return false;
+  } else {
+    this->size--; 
+    return true;
+  }
+}
 AVL::Node *AVL::findRecursively(AVL::Node *curr_node, const string &value) {
   if (curr_node == NULL) {
     return NULL;
@@ -181,8 +194,7 @@ AVL::Node *AVL::findRecursively(AVL::Node *curr_node, const string &value) {
     return curr_node;
   } else if (value < curr_node->getElement()) {
     curr_node = findRecursively(curr_node->getLeft(), value);
-
-  } else if (value >= curr_node->getElement()) {
+  } else if (value > curr_node->getElement()) {
     curr_node = findRecursively(curr_node->getRight(), value);
   }
   return curr_node;
@@ -199,11 +211,9 @@ AVL::Node *AVL::insertRecursively(AVL::Node *curr_node, AVL::Node *parent_node,
     curr_node->updateHeight();
 
     return curr_node;
-
   } else if (value.compare(curr_node->getElement()) == 0) {
 
     return NULL;
-
   } else if (value < curr_node->getElement()) {
 
     AVL::Node *node = insertRecursively(curr_node->getLeft(), curr_node, value);
@@ -223,8 +233,7 @@ AVL::Node *AVL::insertRecursively(AVL::Node *curr_node, AVL::Node *parent_node,
         curr_node = this->setBalance(curr_node);
       }
     }
-
-  } else if (value >= curr_node->getElement()) {
+  } else if (value > curr_node->getElement()) {
 
     AVL::Node *node =
         insertRecursively(curr_node->getRight(), curr_node, value);
@@ -247,6 +256,119 @@ AVL::Node *AVL::insertRecursively(AVL::Node *curr_node, AVL::Node *parent_node,
   }
 
   return curr_node;
+}
+
+AVL::Node *AVL::deleteRecursively(AVL::Node *curr_node, const string &value) {
+  if (curr_node == NULL) {
+    return NULL;
+
+  } else if (value < curr_node->getElement()) {
+    AVL::Node *node = deleteRecursively(curr_node->getLeft(), value);
+
+    curr_node->setLeft(node);
+
+    if (node != NULL) {
+      node->setParent(curr_node);
+    }
+
+  } else if (value > curr_node->getElement()) {
+    AVL::Node *node = deleteRecursively(curr_node->getRight(), value);
+
+    curr_node->setRight(node);
+
+    if (node != NULL) {
+      node->setParent(curr_node);
+    }
+
+  } else if (value.compare(curr_node->getElement()) == 0) {
+
+    AVL::Node *node_to_delete;
+
+    if (curr_node->getLeft() == NULL && curr_node->getRight() == NULL) {
+      node_to_delete = curr_node;
+      if (curr_node == root) {
+        root = NULL;
+      }
+
+      curr_node = NULL;
+      delete node_to_delete;
+
+    } else if (curr_node->getLeft() == NULL) {
+      node_to_delete = curr_node;
+      if (curr_node == root) {
+        root = curr_node->getRight();
+      }
+      AVL::Node *parent = curr_node->getParent();
+      curr_node = curr_node->getRight();
+      curr_node->setParent(parent);
+      delete node_to_delete;
+
+    } else if (curr_node->getRight() == NULL) {
+      node_to_delete = curr_node;
+      if (curr_node == root) {
+        root = curr_node->getLeft();
+      }
+      AVL::Node *parent = curr_node->getParent();
+      curr_node = curr_node->getLeft();
+      curr_node->setParent(parent);
+
+      delete node_to_delete;
+
+    } else {
+      node_to_delete = deleteLeftestInRight(curr_node->getRight());
+      curr_node->setElement(node_to_delete->getElement());
+
+      AVL::Node *node = deleteRecursively(curr_node->getRight(),
+                                          node_to_delete->getElement());
+
+      curr_node->setRight(node);
+      if (node != NULL) {
+        node->setParent(curr_node);
+      }
+    }
+  }
+
+  if (curr_node == NULL) {
+    return NULL;
+  }
+
+  curr_node->updateHeight();
+
+  if (!curr_node->isBalanced()) {
+    if (root == curr_node) {
+      root = this->setSimpleBalance(curr_node);
+      curr_node = root;
+    } else {
+      curr_node = this->setSimpleBalance(curr_node);
+    }
+  }
+  return curr_node;
+}
+
+AVL::Node *AVL::deleteLeftestInRight(AVL::Node *node) {
+
+  if (node == NULL) {
+
+    return NULL;
+
+  } else if (node->getLeft() == NULL) {
+    return node;
+  } else {
+    return (deleteLeftestInRight(node->getLeft()));
+  }
+}
+
+AVL::Node *AVL::setSimpleBalance(AVL::Node *n) {
+  int diff = n->getHeightDiff();
+  if (diff > 1) {
+
+    n = rotateLeftLeft(n);
+
+  } else if (diff < -1) {
+
+    n = rotateRightRight(n);
+  }
+  return n;
 }
 
 AVL::Node *AVL::setBalance(AVL::Node *n) {
@@ -387,9 +509,5 @@ std::ostream &operator<<(std::ostream &out, const AVL &tree) {
   return out;
 }
 
-void AVL::preorderCopy(AVL::Node *copy_node, AVL::Node *node) {
-  if (node == NULL) {
 
-    return;
-  }
-}
+
