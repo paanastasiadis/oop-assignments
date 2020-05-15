@@ -37,6 +37,10 @@ delete_run: all
 	./$(BIN)/$(EXECUTABLE)  dicts/small.dict.asc  dicts/small.dict.des > tests/test3.out
 	diff tests/test3.out tests/test3.std
 
+it_run: all
+	./$(BIN)/$(EXECUTABLE) dicts/small.dict.asc > tests/test4.out
+	diff tests/test4.out tests/test4.std
+
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(CINCLUDES) $^ -o $@

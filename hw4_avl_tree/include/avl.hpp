@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <stack>
 
 using namespace std;
 
@@ -60,7 +61,14 @@ public:
 public:
   class Iterator {
 
+  private:
+    std::stack<AVL::Node *> node_stack;
+    AVL::Node* point_node;
+
   public:
+    Iterator(AVL::Node *root);
+
+  
     Iterator &operator++();
     Iterator operator++(int a);
     string operator*();
@@ -101,11 +109,16 @@ public:
 
   void nodeDeletion(AVL::Node *node);
 
+  AVL::Node *deleteLeftestInRight(AVL::Node *node);
+  AVL::Node *deleteRecursively(AVL::Node *node, const string &value);
+
   AVL::Node *insertRecursively(AVL::Node *curr_node, AVL::Node *parent_node,
                                const string &value);
 
   AVL::Node *findRecursively(AVL::Node *curr_node, const string &value);
   AVL::Node *setBalance(AVL::Node *n);
+
+  AVL::Node *setSimpleBalance(AVL::Node *n);
 
   AVL::Node *rotateRightRight(AVL::Node *n);
   AVL::Node *rotateLeftLeft(AVL::Node *n);
@@ -113,7 +126,7 @@ public:
   AVL::Node *rotateRightLeft(AVL::Node *n);
   void preorderTraversal(AVL::Node *node, std::ostream &out) const;
   void preorderDotTraversal(AVL::Node *node, std::ostream &out) const;
-  void preorderCopy(AVL::Node* copy_node, AVL::Node *node);
+  void preorderCopy(AVL::Node *copy_node, AVL::Node *node);
 };
 
 #endif

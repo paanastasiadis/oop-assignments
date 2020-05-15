@@ -178,11 +178,11 @@ bool AVL::contains(string e) {
 bool AVL::rmv(string e) {
   AVL::Node *node;
   node = deleteRecursively(this->root, e);
-  
+
   if (node == NULL) {
     return false;
   } else {
-    this->size--; 
+    this->size--;
     return true;
   }
 }
@@ -509,5 +509,92 @@ std::ostream &operator<<(std::ostream &out, const AVL &tree) {
   return out;
 }
 
+//  _ _                 _
+// (_) |_ ___ _ __ __ _| |_ ___  _ __
+// | | __/ _ \ '__/ _` | __/ _ \| '__|
+// | | ||  __/ | | (_| | || (_) | |
+// |_|\__\___|_|  \__,_|\__\___/|_|
 
+AVL::Iterator::Iterator(AVL::Node *root) {
+  if (root != NULL) {
+    node_stack.push(root);
+  }
+  point_node = root;
+}
 
+AVL::Iterator &AVL::Iterator::operator++() {
+
+  if (!node_stack.empty()) {
+    AVL::Node *node = node_stack.top();
+    node_stack.pop();
+    AVL::Node *r_child = node->getRight();
+    AVL::Node *l_child = node->getLeft();
+
+    if (r_child != NULL) {
+      node_stack.push(r_child);
+      point_node = r_child;
+    }
+    if (l_child != NULL) {
+      node_stack.push(l_child);
+      point_node = l_child;
+    }
+
+    if (node_stack.empty()) {
+      point_node = NULL;
+    } else if (l_child == NULL && r_child == NULL) {
+      point_node = node_stack.top();
+    }
+  }
+
+  return *this;
+}
+
+AVL::Iterator AVL::Iterator::operator++(int a) {
+  AVL::Node *node = NULL;
+
+  if (!node_stack.empty()) {
+    node = node_stack.top();
+    node_stack.pop();
+    AVL::Node *r_child = node->getRight();
+    AVL::Node *l_child = node->getLeft();
+
+    if (r_child != NULL) {
+      node_stack.push(r_child);
+      point_node = r_child;
+    }
+    if (l_child != NULL) {
+      node_stack.push(l_child);
+      point_node = l_child;
+    }
+
+    if (node_stack.empty()) {
+      point_node = NULL;
+    } else if (l_child == NULL && r_child == NULL) {
+      point_node = node_stack.top();
+    }
+  }
+
+  return AVL::Iterator(node);
+}
+
+string AVL::Iterator::operator*() { return point_node->getElement(); }
+
+bool AVL::Iterator::operator!=(Iterator it) {
+  if (this->point_node != it.point_node) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool AVL::Iterator::operator==(Iterator it) {
+  if (this->point_node == it.point_node) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+AVL::Iterator AVL::begin() const { return Iterator(this->root); }
+
+AVL::Iterator AVL::end() const { return Iterator(NULL); }

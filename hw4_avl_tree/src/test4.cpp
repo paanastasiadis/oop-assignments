@@ -30,23 +30,6 @@ int main(int argc, char *argv[]) {
 
   cout << avl << endl;
 
-  inf.open(argv[2], std::ifstream::in);
-  if (!inf.is_open()) {
-    cout << "Unable to open file " << argv[2];
-    return -1;
-  }
-
-  i = 0;
-  while (inf.getline(line, MAX_LINE_LEN)) {
-    words[i] = string(line);
-    // cout << i+1 << ". " << words[i] << endl;
-
-    avl.rmv(words[i++]);
-    cout << avl << endl;
-    if (i == 20)
-      cout << "\n##\n" << endl;
-  }
-
   char filename[] = "dotavl.dot";
   avl.print2DotFile(filename);
   string str = "dot -Tpng ";
@@ -54,5 +37,13 @@ int main(int argc, char *argv[]) {
   const char *command = str.c_str();
   system(command);
 
-  inf.close();
+  for (AVL::Iterator it = avl.begin(); it != avl.end(); ++it) {
+    cout << *it << " - ";
+  }
+  cout << endl;
+
+  for (AVL::Iterator it = avl.begin(); !(it == avl.end()); it++) {
+    cout << *it << " + ";
+  }
+  cout << endl;
 }
