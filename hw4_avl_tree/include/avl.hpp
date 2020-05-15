@@ -63,12 +63,12 @@ public:
 
   private:
     std::stack<AVL::Node *> node_stack;
-    AVL::Node* point_node;
+    AVL::Node *point_node;
 
   public:
     Iterator(AVL::Node *root);
 
-  
+    AVL::Node* getNode();
     Iterator &operator++();
     Iterator operator++(int a);
     string operator*();

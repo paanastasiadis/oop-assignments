@@ -27,7 +27,6 @@ AVL::Node::Node(const string &e, Node *parent, Node *left, Node *right) {
   this->height = 0;
   this->height_diff = 0;
 }
-
 AVL::Node *AVL::Node::getParent(void) const { return this->parent; }
 
 AVL::Node *AVL::Node::getLeft(void) const { return this->left; }
@@ -134,6 +133,14 @@ AVL::AVL() {
   this->size = 0;
 }
 
+AVL::AVL(const AVL &avl_tree) {
+  this->root = NULL;
+  this->size = 0;
+
+  for (AVL::Iterator it = avl_tree.begin(); it != avl_tree.end(); ++it) {
+    add(*it);
+  }
+}
 AVL::~AVL() { nodeDeletion(this->root); }
 
 void AVL::nodeDeletion(AVL::Node *node) {
@@ -143,12 +150,6 @@ void AVL::nodeDeletion(AVL::Node *node) {
   nodeDeletion(node->getRight());
   nodeDeletion(node->getLeft());
   delete node;
-}
-AVL::AVL(const AVL &avl_tree) {
-
-  // TODO create a new Node object instead of passing the pointer
-  this->size = avl_tree.size;
-  this->root = avl_tree.root;
 }
 
 bool AVL::add(string e) {
@@ -179,7 +180,7 @@ bool AVL::rmv(string e) {
   AVL::Node *node;
   node = deleteRecursively(this->root, e);
 
-  if (node == NULL) {
+  if (node == NULL && node != root) {
     return false;
   } else {
     this->size--;
@@ -509,6 +510,73 @@ std::ostream &operator<<(std::ostream &out, const AVL &tree) {
   return out;
 }
 
+AVL &AVL::operator=(const AVL &avl) {
+  if (this->root != NULL) {
+
+    while (this->size != 0) {
+      this->rmv(root->getElement());
+    }
+  }
+
+  for (AVL::Iterator it = avl.begin(); it != avl.end(); ++it) {
+    this->add(*it);
+  }
+
+  return *this;
+}
+
+AVL AVL::operator+(const AVL &avl) {
+  AVL avl_sum;
+
+  for (AVL::Iterator it = this->begin(); it != this->end(); ++it) {
+    avl_sum.add(*it);
+  }
+
+  for (AVL::Iterator it = avl.begin(); it != avl.end(); ++it) {
+    avl_sum.add(*it);
+  }
+
+  return avl_sum;
+}
+
+AVL AVL::operator+(const string &e) {
+  AVL new_avl;
+
+  for (AVL::Iterator it = this->begin(); it != this->end(); ++it) {
+    new_avl.add(*it);
+  }
+  new_avl.add(e);
+  return new_avl;
+}
+AVL AVL::operator-(const string &e) {
+  AVL new_avl;
+
+  for (AVL::Iterator it = this->begin(); it != this->end(); ++it) {
+    new_avl.add(*it);
+  }
+  new_avl.rmv(e);
+  return new_avl;
+}
+
+AVL &AVL::operator+=(const AVL &avl) {
+  for (AVL::Iterator it = avl.begin(); it != avl.end(); ++it) {
+    this->add(*it);
+  }
+  return *this;
+}
+
+AVL &AVL::operator-=(const string &e) {
+  // TODO Something is wrong with the order of the elements
+  this->rmv(e);
+  return *this;
+}
+
+AVL &AVL::operator+=(const string &e) {
+  this->add(e);
+  // TODO Something is wrong with the order of the elements
+
+  return *this;
+}
 //  _ _                 _
 // (_) |_ ___ _ __ __ _| |_ ___  _ __
 // | | __/ _ \ '__/ _` | __/ _ \| '__|
@@ -550,6 +618,11 @@ AVL::Iterator &AVL::Iterator::operator++() {
 }
 
 AVL::Iterator AVL::Iterator::operator++(int a) {
+
+  if (a) {
+    a = 0;
+  }
+
   AVL::Node *node = NULL;
 
   if (!node_stack.empty()) {
@@ -578,6 +651,8 @@ AVL::Iterator AVL::Iterator::operator++(int a) {
 }
 
 string AVL::Iterator::operator*() { return point_node->getElement(); }
+
+AVL::Node *AVL::Iterator::getNode() { return point_node; }
 
 bool AVL::Iterator::operator!=(Iterator it) {
   if (this->point_node != it.point_node) {

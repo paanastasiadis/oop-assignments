@@ -41,6 +41,28 @@ it_run: all
 	./$(BIN)/$(EXECUTABLE) dicts/small.dict.asc > tests/test4.out
 	diff tests/test4.out tests/test4.std
 
+copy_run: all
+	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd > tests/test5.out
+	diff tests/test5.out tests/test5.std
+	
+equal_run: all
+	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd > tests/test6.out
+	diff tests/test6.out tests/test6.std
+plus_run: all
+	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd dicts/tiny.dict > tests/test7.out
+	diff tests/test7.out tests/test7.std
+	
+plus_equal_run: all
+	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd dicts/tiny.dict > tests/test8.out
+	diff tests/test8.out tests/test8.std
 
+string_plus_minus:
+	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd dicts/small.dict.des > tests/test9.out
+	diff tests/test9.out tests/test9.std	
+
+tree_string_plus_minus:
+	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd dicts/small.dict.des > tests/test10.out
+	diff tests/test10.out tests/test10.std
+	
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(CINCLUDES) $^ -o $@
