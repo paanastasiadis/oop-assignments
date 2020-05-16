@@ -82,8 +82,6 @@ public:
   static const int MAX_HEIGHT_DIFF = 1;
   AVL();
   AVL(const AVL &);
-
-  ~AVL();
   bool contains(string e);
   bool add(string e);
   bool rmv(string e);
@@ -107,8 +105,6 @@ public:
   // #     # #    # #    # #      #    #    #    #   #      #    # #
   // #     # #####  #####  ###### #####     #####    #      #    # ######
 
-  void nodeDeletion(AVL::Node *node);
-
   AVL::Node *deleteLeftestInRight(AVL::Node *node);
   AVL::Node *deleteRecursively(AVL::Node *node, const string &value);
 
@@ -125,8 +121,6 @@ public:
   AVL::Node *rotateLeftRight(AVL::Node *n);
   AVL::Node *rotateRightLeft(AVL::Node *n);
   void preorderTraversal(AVL::Node *node, std::ostream &out) const;
-  void preorderDotTraversal(AVL::Node *node, std::ostream &out) const;
-  void preorderCopy(AVL::Node *copy_node, AVL::Node *node);
 };
 
 #endif

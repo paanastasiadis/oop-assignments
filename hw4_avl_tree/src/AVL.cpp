@@ -1,4 +1,4 @@
-#include "../include/avl.hpp"
+#include "../include/AVL.hpp"
 #include <fstream>
 #include <iostream>
 using namespace std;
@@ -140,16 +140,6 @@ AVL::AVL(const AVL &avl_tree) {
   for (AVL::Iterator it = avl_tree.begin(); it != avl_tree.end(); ++it) {
     add(*it);
   }
-}
-AVL::~AVL() { nodeDeletion(this->root); }
-
-void AVL::nodeDeletion(AVL::Node *node) {
-  if (node == NULL) {
-    return;
-  }
-  nodeDeletion(node->getRight());
-  nodeDeletion(node->getLeft());
-  delete node;
 }
 
 bool AVL::add(string e) {
@@ -468,38 +458,37 @@ void AVL::preorderTraversal(AVL::Node *node, std::ostream &out) const {
   preorderTraversal(node->getRight(), out);
 }
 
-void AVL::pre_order(std::ostream &out) { preorderTraversal(this->root, out); }
+void AVL::pre_order(std::ostream &out) {
 
-void AVL::preorderDotTraversal(AVL::Node *node, std::ostream &out) const {
-  if (node == NULL) {
-    return;
+  for (AVL::Iterator it = this->begin(); it != this->end(); ++it) {
+    out << *it << " ";
+    
   }
-  if (node == this->root) {
-    out << node->getElement();
-    out << " [label = \"";
-    out << node->getElement();
-    out << "\", shape=egg, ";
-    out << "color=red, style=filled]" << endl;
-  } else {
-    out << node->getParent()->getElement();
-    out << " -- ";
-    out << node->getElement() << endl;
-    out << node->getElement();
-    out << " [label = \"";
-    out << node->getElement();
-    out << "\", shape=egg, ";
-    out << "color=red, style=filled]" << endl;
-  }
-
-  preorderDotTraversal(node->getLeft(), out);
-  preorderDotTraversal(node->getRight(), out);
 }
 
 void AVL::print2DotFile(char *filename) {
 
   ofstream fout(filename);
   fout << "graph Trie {" << endl;
-  preorderDotTraversal(this->root, fout);
+
+  for (AVL::Iterator it = this->begin(); it != this->end(); ++it) {
+    if (*it == this->root->getElement()) {
+      fout << *it;
+      fout << " [label = \"";
+      fout << *it;
+      fout << "\", shape=egg, ";
+      fout << "color=red, style=filled]" << endl;
+    } else {
+      fout << it.getNode()->getParent()->getElement();
+      fout << " -- ";
+      fout << *it << endl;
+      fout << *it;
+      fout << " [label = \"";
+      fout << *it;
+      fout << "\", shape=egg, ";
+      fout << "color=red, style=filled]" << endl;
+    }
+  }
   fout << "}" << endl;
 }
 

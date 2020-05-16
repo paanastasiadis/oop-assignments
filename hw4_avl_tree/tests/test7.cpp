@@ -1,11 +1,13 @@
 
-#include "../include/avl.hpp"
+#include "../include/AVL.hpp"
 #define MAX_LINE_LEN 128
 #define MAX_ENTRIES 64
 
+// use tiny dict as 2nd argument
+
 int main(int argc, char *argv[]) {
 
-  AVL avl;
+  AVL avl1, avl2, avl3;
   if(argc<2) {
     cout << "\nInsufficient number of arguments. Exiting..." << endl;
     return 0;
@@ -24,26 +26,22 @@ int main(int argc, char *argv[]) {
   while ( inf.getline (line, MAX_LINE_LEN) ) {
     words[i] = string(line);
     //cout << i+1 << ". " << words[i] << endl;
-    avl += words[i++];
-    cout << avl << endl;
+    avl1.add(words[i++]); 
   }
   inf.close();
   
-  cout << avl << endl;
-  
-  inf.open(argv[2], std::ifstream::in);
-  if (!inf.is_open()) {
-    cout << "Unable to open file " << argv[2];
-    return -1;    
+  inf.open(argv[2]);
+  i=0;
+  while ( inf.getline (line, MAX_LINE_LEN) ) {
+    words[i] = string(line);
+    //cout << i+1 << ". " << words[i] << endl;
+    avl2.add(words[i++]); 
   }
-  
-  // i=0;
-  // while ( inf.getline(line, MAX_LINE_LEN) ) {
-  //   words[i] = string(line);
-  //   //cout << i+1 << ". " << words[i] << endl;  
-  //   avl -= words[i++];
-  //   cout << avl << endl;
-  // }
-  
   inf.close();
+  
+  // Copy constructor
+  avl3 = avl1 + avl2;
+  cout << avl1 << endl;
+  cout << avl2 << endl;
+  cout << avl3 << endl;
 }

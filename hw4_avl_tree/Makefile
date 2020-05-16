@@ -1,68 +1,87 @@
-CC		:= g++ 
-CFLAGS	:= -Wall -Wextra -g
 
-BIN		:= bin
-SRC		:= src
-INCLUDE	:= include
+all: test1 test2 test3 test4 test5 test6 test7 test8 test9 test10 run diff
 
-EXECUTABLE	:= main
-SOURCEDIRS	:= $(shell find $(SRC) -type d)
-INCLUDEDIRS	:= $(shell find $(INCLUDE) -type d)
+test1: tests/test1.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
 
-CINCLUDES	:= $(patsubst %,-I%, $(INCLUDEDIRS:%/=%))
+test2: tests/test2.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
 
-SOURCES		:= $(wildcard $(patsubst %,%/*.cpp, $(SOURCEDIRS)))
-OBJECTS		:= $(SOURCES:.cpp=.o)
+test3: tests/test3.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
 
-all: $(BIN)/$(EXECUTABLE)
+test4: tests/test4.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
+	
+test5: tests/test5.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
 
-.PHONY: clean
+test6: tests/test6.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
+
+test7: tests/test7.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
+
+test8: tests/test8.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
+
+test9: tests/test9.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
+
+test10: tests/test10.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
+
+AVL.o: src/AVL.cpp include/AVL.hpp
+	g++ -g -Wall -std=c++11 src/AVL.cpp -c
+	
 clean:
-	-$(RM) $(BIN)/$(EXECUTABLE)
-	-$(RM) $(OBJECTS)
+	rm *.o *.dot *.png test1 test2 test3 test4 test5 test6 test7 test8 test9 test10 onlytest9 out/*
 
+run:
+	./test1  dicts/small.dict.rnd  > out/test1.out
+	./test2  dicts/small.dict.asc  > out/test2.out
+	./test3  dicts/small.dict.asc dicts/small.dict.des > out/test3.out
+	./test4  dicts/small.dict.asc > out/test4.out
+	./test5  dicts/small.dict.rnd > out/test5.out
+	./test6  dicts/small.dict.rnd > out/test6.out
+	./test7  dicts/small.dict.rnd dicts/tiny.dict > out/test7.out
+	./test8  dicts/small.dict.rnd dicts/tiny.dict > out/test8.out
+	./test9  dicts/small.dict.rnd dicts/small.dict.des > out/test9.out
+	./test10 dicts/small.dict.rnd dicts/small.dict.des > out/test10.out
 
-run: all
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd > tests/test1.out
-	diff tests/test1.out tests/test1.std
-	
-contains_run: all
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.asc > tests/test2.out
-	diff tests/test2.out tests/test2.std
-	
-myrun: all
-	./$(BIN)/$(EXECUTABLE) dicts/mydict.rnd
+diff:
+	diff out/test1.out  std/test1.std
+	diff out/test2.out  std/test2.std
+	diff out/test3.out  std/test3.std
+	diff out/test4.out  std/test4.std
+	diff out/test5.out  std/test5.std
+	diff out/test6.out  std/test6.std
+	diff out/test7.out  std/test7.std
+	diff out/test8.out  std/test8.std
+	diff out/test10.out std/test10.std
+	diff out/test9.out  std/test9.std
 
-delete_run: all
-	./$(BIN)/$(EXECUTABLE)  dicts/small.dict.asc  dicts/small.dict.des > tests/test3.out
-	diff tests/test3.out tests/test3.std
+onlytest9: tests/test9.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o $@
+	./$@  dicts/small.dict.rnd dicts/small.dict.des > out/test9.out
+	diff out/test9.out  std/test9.std
 
-it_run: all
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.asc > tests/test4.out
-	diff tests/test4.out tests/test4.std
-
-copy_run: all
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd > tests/test5.out
-	diff tests/test5.out tests/test5.std
-	
-equal_run: all
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd > tests/test6.out
-	diff tests/test6.out tests/test6.std
-plus_run: all
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd dicts/tiny.dict > tests/test7.out
-	diff tests/test7.out tests/test7.std
-	
-plus_equal_run: all
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd dicts/tiny.dict > tests/test8.out
-	diff tests/test8.out tests/test8.std
-
-string_plus_minus:
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd dicts/small.dict.des > tests/test9.out
-	diff tests/test9.out tests/test9.std	
-
-tree_string_plus_minus:
-	./$(BIN)/$(EXECUTABLE) dicts/small.dict.rnd dicts/small.dict.des > tests/test10.out
-	diff tests/test10.out tests/test10.std
-	
-$(BIN)/$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(CFLAGS) $(CINCLUDES) $^ -o $@
+not9diff: test1 test2 test3 test4 test5 test6 test7 test8 test10
+	./test1  dicts/small.dict.rnd  > out/test1.out
+	./test2  dicts/small.dict.asc  > out/test2.out
+	./test3  dicts/small.dict.asc dicts/small.dict.des > out/test3.out
+	./test4  dicts/small.dict.asc > out/test4.out
+	./test5  dicts/small.dict.rnd > out/test5.out
+	./test6  dicts/small.dict.rnd > out/test6.out
+	./test7  dicts/small.dict.rnd dicts/tiny.dict > out/test7.out
+	./test8  dicts/small.dict.rnd dicts/tiny.dict > out/test8.out
+	./test10 dicts/small.dict.rnd dicts/small.dict.des > out/test10.out
+	diff out/test1.out  std/test1.std
+	diff out/test2.out  std/test2.std
+	diff out/test3.out  std/test3.std
+	diff out/test4.out  std/test4.std
+	diff out/test5.out  std/test5.std
+	diff out/test6.out  std/test6.std
+	diff out/test7.out  std/test7.std
+	diff out/test8.out  std/test8.std
+	diff out/test10.out std/test10.std
