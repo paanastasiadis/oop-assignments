@@ -327,10 +327,10 @@ AVL::Node *AVL::deleteRecursively(AVL::Node *curr_node, const string &value) {
 
   if (!curr_node->isBalanced()) {
     if (root == curr_node) {
-      root = this->setSimpleBalance(curr_node);
+      root = this->setBalance(curr_node);
       curr_node = root;
     } else {
-      curr_node = this->setSimpleBalance(curr_node);
+      curr_node = this->setBalance(curr_node);
     }
   }
   return curr_node;
@@ -349,33 +349,22 @@ AVL::Node *AVL::deleteLeftestInRight(AVL::Node *node) {
   }
 }
 
-AVL::Node *AVL::setSimpleBalance(AVL::Node *n) {
+AVL::Node *AVL::setBalance(AVL::Node *n) {
   int diff = n->getHeightDiff();
-  if (diff > 1) {
+  if (diff > 1 && n->getLeft()->getHeightDiff() >= 0) {
 
     n = rotateLeftLeft(n);
+  }
+  else if (diff > 1 && n->getLeft()->getHeightDiff() < 0) {
+    n = rotateLeftRight(n);
+  
+  } else if (diff < -1 && n->getRight()->getHeightDiff() <= 0) {
 
-  } else if (diff < -1) {
 
     n = rotateRightRight(n);
   }
-  return n;
-}
-
-AVL::Node *AVL::setBalance(AVL::Node *n) {
-  int diff = n->getHeightDiff();
-  if (diff > 1) {
-    if (n->getLeft()->getHeightDiff() <= 0) {
-      n = rotateLeftRight(n);
-    } else {
-      n = rotateLeftLeft(n);
-    }
-  } else if (diff < -1) {
-    if (n->getRight()->getHeightDiff() <= 0) {
-      n = rotateRightRight(n);
-    } else {
-      n = rotateRightLeft(n);
-    }
+  else if (diff < -1 && n->getRight()->getHeightDiff() > 0) {
+    n = rotateRightLeft(n);
   }
   return n;
 }
@@ -449,16 +438,7 @@ AVL::Node *AVL::rotateRightLeft(AVL::Node *n) {
   return rotateRightRight(n);
 }
 
-void AVL::preorderTraversal(AVL::Node *node, std::ostream &out) const {
-  if (node == NULL) {
-    return;
-  }
-  out << node->getElement() << " ";
-  preorderTraversal(node->getLeft(), out);
-  preorderTraversal(node->getRight(), out);
-}
-
-void AVL::pre_order(std::ostream &out) {
+void AVL::pre_order(std::ostream &out) const{
 
   for (AVL::Iterator it = this->begin(); it != this->end(); ++it) {
     out << *it << " ";
@@ -494,7 +474,7 @@ void AVL::print2DotFile(char *filename) {
 
 std::ostream &operator<<(std::ostream &out, const AVL &tree) {
 
-  tree.preorderTraversal(tree.root, out);
+  tree.pre_order(out);
 
   return out;
 }
@@ -555,15 +535,12 @@ AVL &AVL::operator+=(const AVL &avl) {
 }
 
 AVL &AVL::operator-=(const string &e) {
-  // TODO Something is wrong with the order of the elements
   this->rmv(e);
   return *this;
 }
 
 AVL &AVL::operator+=(const string &e) {
   this->add(e);
-  // TODO Something is wrong with the order of the elements
-
   return *this;
 }
 //  _ _                 _

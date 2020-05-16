@@ -86,7 +86,7 @@ public:
   bool add(string e);
   bool rmv(string e);
   void print2DotFile(char *filename);
-  void pre_order(std::ostream &out);
+  void pre_order(std::ostream &out) const;
 
   friend std::ostream &operator<<(std::ostream &out, const AVL &tree);
   AVL &operator=(const AVL &avl);
@@ -112,15 +112,13 @@ public:
                                const string &value);
 
   AVL::Node *findRecursively(AVL::Node *curr_node, const string &value);
-  AVL::Node *setBalance(AVL::Node *n);
 
-  AVL::Node *setSimpleBalance(AVL::Node *n);
+  AVL::Node *setBalance(AVL::Node *n);
 
   AVL::Node *rotateRightRight(AVL::Node *n);
   AVL::Node *rotateLeftLeft(AVL::Node *n);
   AVL::Node *rotateLeftRight(AVL::Node *n);
   AVL::Node *rotateRightLeft(AVL::Node *n);
-  void preorderTraversal(AVL::Node *node, std::ostream &out) const;
 };
 
 #endif

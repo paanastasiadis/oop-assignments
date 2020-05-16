@@ -66,6 +66,9 @@ onlytest9: tests/test9.cpp AVL.o
 	./$@  dicts/small.dict.rnd dicts/small.dict.des > out/test9.out
 	diff out/test9.out  std/test9.std
 
+debug9: tests/test9.cpp AVL.o
+	g++ -Wall -g -std=c++11 $^ -o onlytest9
+
 not9diff: test1 test2 test3 test4 test5 test6 test7 test8 test10
 	./test1  dicts/small.dict.rnd  > out/test1.out
 	./test2  dicts/small.dict.asc  > out/test2.out
