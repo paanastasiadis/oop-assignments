@@ -1,3 +1,12 @@
+/**
+ * @file AVL.hpp
+ * @author Panagiotis Anastasiadis 2134
+ * @brief  Homework 4
+ *
+ * @copyright Copyright (c) 2020
+ *
+ */
+
 #ifndef __AVL_HPP_
 #define __AVL_HPP_
 
@@ -13,14 +22,6 @@ private:
     Node *parent, *left, *right;
     int height;
     string element;
-
-    //    #
-    //   # #   #####  #####  ###### #####     #####  #   #    #    # ######
-    //  #   #  #    # #    # #      #    #    #    #  # #     ##  ## #
-    // #     # #    # #    # #####  #    #    #####    #      # ## # #####
-    // ####### #    # #    # #      #    #    #    #   #      #    # #
-    // #     # #    # #    # #      #    #    #    #   #      #    # #
-    // #     # #####  #####  ###### #####     #####    #      #    # ######
     int height_diff;
 
   public:
@@ -43,14 +44,6 @@ private:
     int leftChildHeight() const;
     int updateHeight();
     bool isBalanced();
-
-    //    #
-    //   # #   #####  #####  ###### #####     #####  #   #    #    # ######
-    //  #   #  #    # #    # #      #    #    #    #  # #     ##  ## #
-    // #     # #    # #    # #####  #    #    #####    #      # ## # #####
-    // ####### #    # #    # #      #    #    #    #   #      #    # #
-    // #     # #    # #    # #      #    #    #    #   #      #    # #
-    // #     # #####  #####  ###### #####     #####    #      #    # ######
     int setHeight(Node *temp);
   };
 
@@ -68,7 +61,7 @@ public:
   public:
     Iterator(AVL::Node *root);
 
-    AVL::Node* getNode();
+    AVL::Node *getNode();
     Iterator &operator++();
     Iterator operator++(int a);
     string operator*();
@@ -96,14 +89,6 @@ public:
   AVL &operator-=(const string &e);
   AVL operator+(const string &e);
   AVL operator-(const string &e);
-
-  //    #
-  //   # #   #####  #####  ###### #####     #####  #   #    #    # ######
-  //  #   #  #    # #    # #      #    #    #    #  # #     ##  ## #
-  // #     # #    # #    # #####  #    #    #####    #      # ## # #####
-  // ####### #    # #    # #      #    #    #    #   #      #    # #
-  // #     # #    # #    # #      #    #    #    #   #      #    # #
-  // #     # #####  #####  ###### #####     #####    #      #    # ######
 
   AVL::Node *deleteLeftestInRight(AVL::Node *node);
   AVL::Node *deleteRecursively(AVL::Node *node, const string &value);

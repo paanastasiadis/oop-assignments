@@ -1,23 +1,16 @@
+/**
+ * @file AVL.cpp
+ * @author Panagiotis Anastasiadis 2134
+ * @brief  Homework 4
+ *
+ * @copyright Copyright (c) 2020
+ *
+ */
+
 #include "../include/AVL.hpp"
 #include <fstream>
 #include <iostream>
 using namespace std;
-
-// #     #
-// ##    #  ####  #####  ######
-// # #   # #    # #    # #
-// #  #  # #    # #    # #####
-// #   # # #    # #    # #
-// #    ## #    # #    # #
-// #     #  ####  #####  ######
-
-// #     #
-// ##    #  ####  #####  ######
-// # #   # #    # #    # #
-// #  #  # #    # #    # #####
-// #   # # #    # #    # #
-// #    ## #    # #    # #
-// #     #  ####  #####  ######
 
 AVL::Node::Node(const string &e, Node *parent, Node *left, Node *right) {
   this->element = e;
@@ -70,6 +63,7 @@ int AVL::Node::leftChildHeight(void) const {
 
 int AVL::Node::rightChildHeight(void) const {
   Node *right_child = this->getRight();
+
   if (right_child == NULL) {
     return 0;
   }
@@ -78,56 +72,133 @@ int AVL::Node::rightChildHeight(void) const {
 }
 int AVL::Node::getHeightDiff(void) const { return this->height_diff; }
 
+int AVL::Node::updateHeight(void) {
+
+  // set the height of the node by accessing
+  this->setHeight(this);
+
+  return (this->getHeight());
+}
+
 int AVL::Node::setHeight(AVL::Node *child_node) {
   int h = 0;
   if (child_node != NULL) {
 
+    // find height of left and right children by accessing the subtrees
+    // recursively
     int l_height = setHeight(child_node->left);
     int r_height = setHeight(child_node->right);
+
+    // update height difference of node's subtrees
     child_node->height_diff = l_height - r_height;
+
+    // set node height
     int max_height = max(l_height, r_height);
     h = max_height + 1;
     child_node->height = h;
   }
   return h;
 }
-int AVL::Node::updateHeight(void) {
-  // int l_height = this->leftChildHeight();
-  // int r_height = this->rightChildHeight();
-
-  // // store the new height difference between the subtrees
-  // this->height_diff = l_height - r_height;
-
-  // int max_length = max(l_height, r_height);
-
-  this->setHeight(this);
-
-  return (this->getHeight());
-}
 
 bool AVL::Node::isBalanced(void) {
   int diff = this->getHeightDiff();
+
+  // check for unbalance by calculating the height difference
+  // of the two subtrees
   if (diff > 1 || diff < -1) {
     return false;
   }
   return true;
 }
 
-//    #    #     # #
-//   # #   #     # #
-//  #   #  #     # #
-// #     # #     # #
-// #######  #   #  #
-// #     #   # #   #
-// #     #    #    #######
+AVL::Iterator::Iterator(AVL::Node *root) {
+  if (root != NULL) {
+    node_stack.push(root);
+  }
+  point_node = root;
+}
 
-//    #    #     # #
-//   # #   #     # #
-//  #   #  #     # #
-// #     # #     # #
-// #######  #   #  #
-// #     #   # #   #
-// #     #    #    #######
+AVL::Iterator &AVL::Iterator::operator++() {
+
+  if (!node_stack.empty()) {
+    AVL::Node *node = node_stack.top();
+    node_stack.pop(); // pop the top node in  stack
+    AVL::Node *r_child = node->getRight();
+    AVL::Node *l_child = node->getLeft();
+
+    if (r_child != NULL) {
+      node_stack.push(r_child);
+      point_node = r_child;
+    }
+    if (l_child != NULL) {
+      node_stack.push(l_child);
+      point_node = l_child;
+    }
+
+    if (node_stack.empty()) {
+      point_node = NULL;
+    } else if (l_child == NULL && r_child == NULL) {
+      point_node =
+          node_stack.top(); // update the iterator to point to the next node
+    }
+  }
+
+  return *this;
+}
+
+AVL::Iterator AVL::Iterator::operator++(int a) {
+
+  // dummy value a
+  if (a) {
+    a = 0;
+  }
+
+  AVL::Node *node = NULL;
+
+  if (!node_stack.empty()) {
+    node = node_stack.top();
+    node_stack.pop();
+    AVL::Node *r_child = node->getRight();
+    AVL::Node *l_child = node->getLeft();
+
+    if (r_child != NULL) {
+      node_stack.push(r_child);
+      point_node = r_child;
+    }
+    if (l_child != NULL) {
+      node_stack.push(l_child);
+      point_node = l_child;
+    }
+
+    if (node_stack.empty()) {
+      point_node = NULL;
+    } else if (l_child == NULL && r_child == NULL) {
+      point_node = node_stack.top();
+    }
+  }
+
+  return AVL::Iterator(node);
+}
+
+string AVL::Iterator::operator*() { return point_node->getElement(); }
+
+AVL::Node *AVL::Iterator::getNode() { return point_node; }
+
+bool AVL::Iterator::operator!=(Iterator it) {
+  if (this->point_node != it.point_node) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool AVL::Iterator::operator==(Iterator it) {
+  if (this->point_node == it.point_node) {
+    return true;
+  } else {
+    return false;
+  }
+}
 AVL::AVL() {
   this->root = NULL;
   this->size = 0;
@@ -179,9 +250,9 @@ bool AVL::rmv(string e) {
 }
 AVL::Node *AVL::findRecursively(AVL::Node *curr_node, const string &value) {
   if (curr_node == NULL) {
-    return NULL;
+    return NULL; // value not found, return null
   } else if (value.compare(curr_node->getElement()) == 0) {
-
+    // value found, return the corresponding node
     return curr_node;
   } else if (value < curr_node->getElement()) {
     curr_node = findRecursively(curr_node->getLeft(), value);
@@ -194,16 +265,20 @@ AVL::Node *AVL::findRecursively(AVL::Node *curr_node, const string &value) {
 AVL::Node *AVL::insertRecursively(AVL::Node *curr_node, AVL::Node *parent_node,
                                   const string &value) {
 
+  // create a new node for the new value
   if (curr_node == NULL) {
     curr_node = new AVL::Node(value, parent_node, NULL, NULL);
+
+    // when node is root, update the root pointer, too
     if (this->root == NULL) {
       this->root = curr_node;
     }
+    // set the node height
     curr_node->updateHeight();
 
     return curr_node;
   } else if (value.compare(curr_node->getElement()) == 0) {
-
+    // value already exists, return null
     return NULL;
   } else if (value < curr_node->getElement()) {
 
@@ -215,8 +290,12 @@ AVL::Node *AVL::insertRecursively(AVL::Node *curr_node, AVL::Node *parent_node,
     curr_node->setLeft(node);
     node->setParent(curr_node);
 
+    // update height of nodes subtrees after the insertion
     curr_node->updateHeight();
     if (!curr_node->isBalanced()) {
+
+      // check if node to be balanced is root in order to update the root
+      // pointer
       if (root == curr_node) {
         root = this->setBalance(curr_node);
         curr_node = root;
@@ -275,7 +354,8 @@ AVL::Node *AVL::deleteRecursively(AVL::Node *curr_node, const string &value) {
 
     AVL::Node *node_to_delete;
 
-    if (curr_node->getLeft() == NULL && curr_node->getRight() == NULL) {
+    if (curr_node->getLeft() == NULL &&
+        curr_node->getRight() == NULL) { // no children case
       node_to_delete = curr_node;
       if (curr_node == root) {
         root = NULL;
@@ -284,7 +364,7 @@ AVL::Node *AVL::deleteRecursively(AVL::Node *curr_node, const string &value) {
       curr_node = NULL;
       delete node_to_delete;
 
-    } else if (curr_node->getLeft() == NULL) {
+    } else if (curr_node->getLeft() == NULL) { // right child only case
       node_to_delete = curr_node;
       if (curr_node == root) {
         root = curr_node->getRight();
@@ -294,7 +374,7 @@ AVL::Node *AVL::deleteRecursively(AVL::Node *curr_node, const string &value) {
       curr_node->setParent(parent);
       delete node_to_delete;
 
-    } else if (curr_node->getRight() == NULL) {
+    } else if (curr_node->getRight() == NULL) { // left child only case
       node_to_delete = curr_node;
       if (curr_node == root) {
         root = curr_node->getLeft();
@@ -305,7 +385,7 @@ AVL::Node *AVL::deleteRecursively(AVL::Node *curr_node, const string &value) {
 
       delete node_to_delete;
 
-    } else {
+    } else { // both children exist, delete the leftest node in right subtree
       node_to_delete = deleteLeftestInRight(curr_node->getRight());
       curr_node->setElement(node_to_delete->getElement());
 
@@ -325,6 +405,7 @@ AVL::Node *AVL::deleteRecursively(AVL::Node *curr_node, const string &value) {
 
   curr_node->updateHeight();
 
+  // check the balance after deletion
   if (!curr_node->isBalanced()) {
     if (root == curr_node) {
       root = this->setBalance(curr_node);
@@ -352,18 +433,12 @@ AVL::Node *AVL::deleteLeftestInRight(AVL::Node *node) {
 AVL::Node *AVL::setBalance(AVL::Node *n) {
   int diff = n->getHeightDiff();
   if (diff > 1 && n->getLeft()->getHeightDiff() >= 0) {
-
     n = rotateLeftLeft(n);
-  }
-  else if (diff > 1 && n->getLeft()->getHeightDiff() < 0) {
+  } else if (diff > 1 && n->getLeft()->getHeightDiff() < 0) {
     n = rotateLeftRight(n);
-  
   } else if (diff < -1 && n->getRight()->getHeightDiff() <= 0) {
-
-
     n = rotateRightRight(n);
-  }
-  else if (diff < -1 && n->getRight()->getHeightDiff() > 0) {
+  } else if (diff < -1 && n->getRight()->getHeightDiff() > 0) {
     n = rotateRightLeft(n);
   }
   return n;
@@ -438,11 +513,10 @@ AVL::Node *AVL::rotateRightLeft(AVL::Node *n) {
   return rotateRightRight(n);
 }
 
-void AVL::pre_order(std::ostream &out) const{
+void AVL::pre_order(std::ostream &out) const {
 
   for (AVL::Iterator it = this->begin(); it != this->end(); ++it) {
     out << *it << " ";
-    
   }
 }
 
@@ -543,99 +617,6 @@ AVL &AVL::operator+=(const string &e) {
   this->add(e);
   return *this;
 }
-//  _ _                 _
-// (_) |_ ___ _ __ __ _| |_ ___  _ __
-// | | __/ _ \ '__/ _` | __/ _ \| '__|
-// | | ||  __/ | | (_| | || (_) | |
-// |_|\__\___|_|  \__,_|\__\___/|_|
-
-AVL::Iterator::Iterator(AVL::Node *root) {
-  if (root != NULL) {
-    node_stack.push(root);
-  }
-  point_node = root;
-}
-
-AVL::Iterator &AVL::Iterator::operator++() {
-
-  if (!node_stack.empty()) {
-    AVL::Node *node = node_stack.top();
-    node_stack.pop();
-    AVL::Node *r_child = node->getRight();
-    AVL::Node *l_child = node->getLeft();
-
-    if (r_child != NULL) {
-      node_stack.push(r_child);
-      point_node = r_child;
-    }
-    if (l_child != NULL) {
-      node_stack.push(l_child);
-      point_node = l_child;
-    }
-
-    if (node_stack.empty()) {
-      point_node = NULL;
-    } else if (l_child == NULL && r_child == NULL) {
-      point_node = node_stack.top();
-    }
-  }
-
-  return *this;
-}
-
-AVL::Iterator AVL::Iterator::operator++(int a) {
-
-  if (a) {
-    a = 0;
-  }
-
-  AVL::Node *node = NULL;
-
-  if (!node_stack.empty()) {
-    node = node_stack.top();
-    node_stack.pop();
-    AVL::Node *r_child = node->getRight();
-    AVL::Node *l_child = node->getLeft();
-
-    if (r_child != NULL) {
-      node_stack.push(r_child);
-      point_node = r_child;
-    }
-    if (l_child != NULL) {
-      node_stack.push(l_child);
-      point_node = l_child;
-    }
-
-    if (node_stack.empty()) {
-      point_node = NULL;
-    } else if (l_child == NULL && r_child == NULL) {
-      point_node = node_stack.top();
-    }
-  }
-
-  return AVL::Iterator(node);
-}
-
-string AVL::Iterator::operator*() { return point_node->getElement(); }
-
-AVL::Node *AVL::Iterator::getNode() { return point_node; }
-
-bool AVL::Iterator::operator!=(Iterator it) {
-  if (this->point_node != it.point_node) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool AVL::Iterator::operator==(Iterator it) {
-  if (this->point_node == it.point_node) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 AVL::Iterator AVL::begin() const { return Iterator(this->root); }
 
 AVL::Iterator AVL::end() const { return Iterator(NULL); }
