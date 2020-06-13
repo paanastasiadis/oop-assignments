@@ -31,6 +31,13 @@ template <typename T> int graphUI() {
       else
         cout << "av " << vtx << " NOK\n";
     } else if (!option.compare("rv")) {
+      getline(std::cin, line);
+      stream << line;
+      T vtx(stream);
+      if (g.rmvVtx(vtx))
+        cout << "rv " << vtx << " OK\n";
+      else
+        cout << "rv " << vtx << " NOK\n";
 
     } else if (!option.compare("ae")) {
       getline(std::cin, line);
@@ -52,7 +59,7 @@ template <typename T> int graphUI() {
     } else if (!option.compare("dot")) {
       // getline(std::cin, line);
       // stream << line;
-      
+
       char filename[] = "dotavl.dot";
       g.print2DotFile(filename);
       string str = "dot -Tpng ";
@@ -61,8 +68,22 @@ template <typename T> int graphUI() {
       system(command);
 
     } else if (!option.compare("bfs")) {
+      getline(std::cin, line);
+      stream << line;
+      list<T> resList;
+
+      resList = g.bfs(stream);
 
       cout << "\n----- BFS Traversal -----\n";
+
+      for (typename list<T>::iterator it = resList.begin(); it != resList.end();
+           it++) {
+        if (*it != resList.back()) {
+          cout << *it << " -> ";
+        } else {
+          cout << *it;
+        }
+      }
 
       cout << "\n-------------------------\n";
     } else if (!option.compare("dfs")) {

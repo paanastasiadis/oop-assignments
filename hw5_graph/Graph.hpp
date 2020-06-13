@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <ostream>
+#include <queue>
 #include <set>
 #include <vector>
 using namespace std;
@@ -35,12 +36,23 @@ template <typename T> class Graph {
 
   public:
     U info;
-    vector<pair<Vertex<U> *, int>> adjList;
-    Vertex(U nodeInfo);
+
+    int priority;
+    bool visited;
+
+    template <typename P>
+    friend bool operator<(const pair<Vertex<P> *, int> &pair1,
+                          const pair<Vertex<P> *, int> &pair2) {
+      return pair1.first->priority <= pair2.first->priority;
+    }
+
+    set<pair<Vertex<U> *, int>, less<pair<Vertex<U> *, int>>> adjList;
+    Vertex(U nodeInfo, int pr);
   };
 
   vector<Vertex<T> *> *vertexSet;
   int totalVertices;
+  int ins_counter;
   bool isDirected;
 
   void expand_table();
@@ -69,13 +81,15 @@ public:
 
 template <typename T>
 template <typename U>
-Graph<T>::Vertex<U>::Vertex(U nodeInfo) {
+Graph<T>::Vertex<U>::Vertex(U nodeInfo, int prio) {
   this->info = nodeInfo;
+  this->priority = prio;
+  this->visited = false;
 }
-
 template <typename T> Graph<T>::Graph(bool isDirectedGraph, int capacity) {
   this->isDirected = isDirectedGraph;
   this->totalVertices = 0;
+  this->ins_counter = 0;
   this->vertexSet = new vector<Vertex<T> *>;
 }
 
@@ -88,7 +102,8 @@ template <typename T> bool Graph<T>::addVtx(const T &info) {
     }
   }
   this->totalVertices++;
-  Vertex<T> *vtx = new Vertex<T>(info);
+  this->ins_counter++;
+  Vertex<T> *vtx = new Vertex<T>(info, this->ins_counter);
   vertexSet->push_back(vtx);
   return true;
 }
@@ -101,12 +116,11 @@ template <typename T> bool Graph<T>::rmvVtx(const T &info) {
       Vertex<T> *vtx = *it;
       vertexSet->erase(it);
       // TODO Erase also the associated edges
-      for (auto it2 = vertexSet->begin(); it2 != vertexSet->adjList->end();
-           it2++) {
-        for (auto it3 = it2->adjList->begin(); it3 != it2->adjList->end();
+      for (auto it2 = vertexSet->begin(); it2 != vertexSet->end(); it2++) {
+        for (auto it3 = (*it2)->adjList.begin(); it3 != (*it2)->adjList.end();
              it3++) {
-          if ((*it3)->first->info == vtx->info) {
-            it2->adjList->erase(it3);
+          if (it3->first->info == vtx->info) {
+            (*it2)->adjList.erase(it3);
           }
         }
       }
@@ -146,22 +160,24 @@ bool Graph<T>::addEdg(const T &from, const T &to, int distance) {
     }
   }
 
-  for (auto it = edge_dst->adjList.begin(); it != edge_dst->adjList.end();
-       it++) {
-    if ((*it).first->info == edge_src->info) {
-      return false;
+  if (this->isDirected == false) {
+    for (auto it = edge_dst->adjList.begin(); it != edge_dst->adjList.end();
+         it++) {
+      if ((*it).first->info == edge_src->info) {
+        return false;
+      }
     }
   }
 
   pair<Vertex<T> *, int> edgeToAdd(edge_dst, distance);
 
   if (this->isDirected == false) {
-    edge_src->adjList.push_back(edgeToAdd);
+    edge_src->adjList.insert(edgeToAdd);
 
     pair<Vertex<T> *, int> edgeToAdd2(edge_src, distance);
-    edge_dst->adjList.push_back(edgeToAdd2);
+    edge_dst->adjList.insert(edgeToAdd2);
   } else {
-    edge_src->adjList.push_back(edgeToAdd);
+    edge_src->adjList.insert(edgeToAdd);
   }
 
   return true;
@@ -195,17 +211,52 @@ template <typename T> bool Graph<T>::rmvEdg(const T &from, const T &to) {
     }
   }
 
-  for (auto it = edge_dst->adjList->begin(); it != edge_dst->adjList->end();
-       it++) {
-    if ((*it)->first->info == edge_src->info) {
-      edge_dst->adjList->erase(it);
+  if (this->isDirected == false) {
+    for (auto it = edge_dst->adjList->begin(); it != edge_dst->adjList->end();
+         it++) {
+      if ((*it)->first->info == edge_src->info) {
+        edge_dst->adjList->erase(it);
+      }
     }
   }
 
   return true;
 }
 template <typename T> list<T> Graph<T>::dfs(const T &info) const {}
-template <typename T> list<T> Graph<T>::bfs(const T &info) const {}
+template <typename T> list<T> Graph<T>::bfs(const T &info) const {
+  Vertex<T> *vtx;
+  list<T> bfsResultList;
+
+  queue<Vertex<T> *> pq;
+
+  for (auto it = vertexSet->begin(); it != vertexSet->end(); it++) {
+    if ((*it)->info == info) {
+      pq.push(*it);
+      (*it)->visited = true;
+      vtx = (*it);
+      break;
+    }
+  }
+
+  while (!pq.empty()) {
+    vtx = pq.front();
+    pq.pop();
+    bfsResultList.push_back(vtx->info);
+    for (auto it2 = vtx->adjList.begin(); it2 != vtx->adjList.end(); it2++) {
+      if (it2->first->visited == false) {
+        it2->first->visited = true;
+
+        pq.push(it2->first);
+      }
+    }
+  }
+
+  for (auto it = vertexSet->begin(); it != vertexSet->end(); it++) {
+    (*it)->visited = false;
+  }
+
+  return bfsResultList;
+}
 template <typename T> list<Edge<T>> Graph<T>::mst() {}
 
 template <typename T> void Graph<T>::print2DotFile(const char *filename) const {

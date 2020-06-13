@@ -38,7 +38,6 @@ ae omega sigma 2
 ae omega zeta 9
 ae zeta theta 4
 ae zeta kappa 1
-# dot bfs2
 bfs alpha
 bfs theta
 bfs gamma
@@ -47,4 +46,5 @@ rv epsilon
 bfs lamda
 rv alpha
 bfs beta
+# dot bfs2
 q

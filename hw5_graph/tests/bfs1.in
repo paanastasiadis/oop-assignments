@@ -34,8 +34,8 @@ ae omega epsilon 7
 ae kappa zeta 3
 ae lamda kappa 10
 ae lamda beta 5
-dot bfs1
 bfs alpha
 bfs delta
 bfs sigma
+# dot bfs1
 q
