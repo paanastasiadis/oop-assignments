@@ -88,7 +88,22 @@ template <typename T> int graphUI() {
       cout << "\n-------------------------\n";
     } else if (!option.compare("dfs")) {
 
+      getline(std::cin, line);
+      stream << line;
+      list<T> resList;
+
+      resList = g.dfs(stream);
+
       cout << "\n----- DFS Traversal -----\n";
+
+      for (typename list<T>::iterator it = resList.begin(); it != resList.end();
+           it++) {
+        if (*it != resList.back()) {
+          cout << *it << " -> ";
+        } else {
+          cout << *it;
+        }
+      }
 
       cout << "\n-------------------------\n";
     } else if (!option.compare("dijkstra")) {
@@ -108,11 +123,15 @@ template <typename T> int graphUI() {
       cout << "Bellman-Ford (" << from << " - " << to << "): ";
 
     } else if (!option.compare("mst")) {
+      list<Edge<T>> resList;
 
       cout << "\n--- Min Spanning Tree ---\n";
-      //! sum previously not in commentsd
-      cout << "MST Cost: "
-           << "sum" << endl;
+      resList = g.mst();
+      for (auto it = resList.begin(); it != resList.end(); it++) {
+
+        cout << *it << endl;
+      }
+      cout << "MST Cost: " << g.getMSTCost() << endl;
     } else if (!option.compare("q")) {
       cerr << "bye bye...\n";
       return 0;
