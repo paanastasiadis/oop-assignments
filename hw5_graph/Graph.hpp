@@ -2,8 +2,11 @@
 #ifndef _GRAPH_HPP_
 #define _GRAPH_HPP_
 
+#include "NegativeGraphCycle.hpp"
 #include "UnionFind.hpp"
+#include <cstdint>
 #include <fstream>
+#include <iostream>
 #include <list>
 #include <map>
 #include <ostream>
@@ -39,7 +42,7 @@ template <typename T> struct Edge {
   pair<Vertex<T> *, Vertex<T> *> address;
 
   Edge(T f, T t, int d, pair<Vertex<T> *, Vertex<T> *> addr)
-      :from(f), to(t), dist(d), address(addr) {}
+      : from(f), to(t), dist(d), address(addr) {}
   bool operator<(const Edge<T> &e) const;
   bool operator>(const Edge<T> &e) const;
   template <typename U>
@@ -107,6 +110,14 @@ template <typename T> Graph<T>::Graph(bool isDirectedGraph, int capacity) {
   this->vtxArray = new vector<Vertex<T> *>;
 }
 
+template <typename T> bool Graph<T>::contains(const T &info) {
+  for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
+    if ((*it)->info == info) {
+      return true;
+    }
+  }
+  return false;
+}
 template <typename T> bool Graph<T>::addVtx(const T &info) {
 
   for (typename vector<Vertex<T> *>::iterator it = vtxArray->begin();
@@ -135,6 +146,7 @@ template <typename T> bool Graph<T>::rmvVtx(const T &info) {
              it3++) {
           if (it3->first->info == vtx->info) {
             (*it2)->adjList.erase(it3);
+            break;
           }
         }
       }
@@ -215,22 +227,25 @@ template <typename T> bool Graph<T>::rmvEdg(const T &from, const T &to) {
       nodesFound++;
     }
   }
+
   if (nodesFound < 2) {
     return false;
   }
 
-  for (auto it = edge_src->adjList->begin(); it != edge_src->adjList->end();
+  for (auto it = edge_src->adjList.begin(); it != edge_src->adjList.end();
        it++) {
-    if ((*it)->first->info == edge_dst->info) {
-      edge_src->adjList->erase(it);
+    if (it->first->info == edge_dst->info) {
+      edge_src->adjList.erase(it);
+      break;
     }
   }
 
   if (this->isDirected == false) {
-    for (auto it = edge_dst->adjList->begin(); it != edge_dst->adjList->end();
+    for (auto it = edge_dst->adjList.begin(); it != edge_dst->adjList.end();
          it++) {
-      if ((*it)->first->info == edge_src->info) {
-        edge_dst->adjList->erase(it);
+      if (it->first->info == edge_src->info) {
+        edge_dst->adjList.erase(it);
+        break;
       }
     }
   }
@@ -306,14 +321,12 @@ template <typename T> list<T> Graph<T>::bfs(const T &info) const {
   return bfsResultList;
 }
 template <typename T> list<Edge<T>> Graph<T>::mst() {
-  list<Edge<T>> edgeList;
-  list<Edge<T>> resList;
 
-  if (this->isDirected == true)
-  {
-    return resList;
+  if (this->isDirected == true) {
+    return {};
   }
-  
+  list<Edge<T>> edgeList;
+
   int i = 0;
   bool visited[this->totalVertices];
   for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
@@ -324,9 +337,8 @@ template <typename T> list<Edge<T>> Graph<T>::mst() {
          it2++) {
 
       if ((*it) < it2->first) {
-        pair<Vertex<T> *, Vertex<T> *> addr((*it), it2->first); 
-        Edge<T> e(
-                  (*it)->info, it2->first->info, it2->second, addr);
+        pair<Vertex<T> *, Vertex<T> *> addr((*it), it2->first);
+        Edge<T> e((*it)->info, it2->first->info, it2->second, addr);
         edgeList.push_back(e);
       }
     }
@@ -336,15 +348,16 @@ template <typename T> list<Edge<T>> Graph<T>::mst() {
   UnionFind uf(this->totalVertices);
 
   i = 0;
-  for( auto it = edgeList.begin(); it != edgeList.end(); it++) {
+  list<Edge<T>> resList;
+
+  for (auto it = edgeList.begin(); it != edgeList.end(); it++) {
     int v_from = it->address.first->tempIdx;
     int v_to = it->address.second->tempIdx;
 
-    if (i == this->totalVertices)
-    {
+    if (i == this->totalVertices) {
       break;
     }
-    
+
     if (visited[v_from] == false) {
       visited[v_from] = true;
       i++;
@@ -362,20 +375,20 @@ template <typename T> list<Edge<T>> Graph<T>::mst() {
       resList.push_back(*it);
       this->mstCost += (*it).dist;
       uf.merge_sets(from_set, to_set);
-
     }
   }
   return resList;
 }
 
-template <typename T>
-int Graph<T>::getMSTCost() {
-  return this->mstCost;
-}
+template <typename T> int Graph<T>::getMSTCost() { return this->mstCost; }
 
 template <typename T> void Graph<T>::print2DotFile(const char *filename) const {
   ofstream fout(filename);
-  fout << "digraph Trie {" << endl;
+  if (this->isDirected == true) {
+    fout << "digraph Trie {" << endl;
+  } else {
+    fout << "graph Trie {" << endl;
+  }
 
   for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
     fout << (*it)->info;
@@ -385,22 +398,181 @@ template <typename T> void Graph<T>::print2DotFile(const char *filename) const {
     fout << "color=red, style=filled]" << endl;
     for (auto it2 = (*it)->adjList.begin(); it2 != (*it)->adjList.end();
          it2++) {
+      if (this->isDirected == true ||
+          (this->isDirected == false && (*it) < it2->first)) {
+        fout << (*it)->info;
+        if (this->isDirected == true) {
+          fout << " -> ";
+        } else {
+          fout << " -- ";
+        }
+        fout << it2->first->info << endl;
 
-      fout << (*it)->info;
-      fout << " -> ";
-      fout << it2->first->info << endl;
-
-      fout << " [label = \"";
-      fout << it2->second;
-      fout << "\",]";
+        fout << " [label = \"";
+        fout << it2->second;
+        fout << "\",]";
+      }
     }
   }
-
   fout << "}" << endl;
 }
 
-template <typename T> list<T> Graph<T>::dijkstra(const T &from, const T &to) {}
+template <typename T> list<T> Graph<T>::dijkstra(const T &from, const T &to) {
+
+  int i = 0;
+
+  int distance[this->totalVertices];
+  Vertex<T> *previous[this->totalVertices];
+  Vertex<T> *srcVtx;
+  Vertex<T> *dstVtx;
+
+  priority_queue<pair<int, Vertex<T> *>, vector<pair<int, Vertex<T> *>>,
+                 greater<pair<int, Vertex<T> *>>>
+      pq;
+
+  for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
+    (*it)->tempIdx = i;
+    previous[i] = NULL;
+
+    if (from == (*it)->info) {
+      distance[i] = 0;
+      srcVtx = *it;
+      pq.push(make_pair(0, *it));
+    } else {
+      distance[i] = INT32_MAX;
+    }
+
+    if (to == (*it)->info) {
+      dstVtx = (*it);
+    }
+    i++;
+  }
+
+  while (!pq.empty()) {
+    Vertex<T> *currSrcVtx = pq.top().second;
+    pq.pop();
+
+    for (auto it2 = currSrcVtx->adjList.begin();
+         it2 != currSrcVtx->adjList.end(); it2++) {
+      int weight = it2->second;
+      if (weight < 0) {
+        weight = 0;
+      }
+      Vertex<T> *currDstVtx = it2->first;
+
+      if (distance[currSrcVtx->tempIdx] + weight <
+          distance[currDstVtx->tempIdx]) {
+        distance[currDstVtx->tempIdx] = distance[currSrcVtx->tempIdx] + weight;
+        previous[currDstVtx->tempIdx] = currSrcVtx;
+
+        pq.push(make_pair(distance[currDstVtx->tempIdx], currDstVtx));
+      }
+    }
+  }
+
+  int j = dstVtx->tempIdx;
+
+  if (previous[j] == NULL) {
+    return {};
+  }
+  list<T> resList;
+
+  while (previous[j]->info != from) {
+    resList.push_front(previous[j]->info);
+    j = previous[j]->tempIdx;
+
+    if (previous[j] == NULL) {
+      return {};
+    }
+  }
+
+  resList.push_back(dstVtx->info);
+  resList.push_front(srcVtx->info);
+  return resList;
+}
+
 template <typename T>
-list<T> Graph<T>::bellman_ford(const T &from, const T &to) {}
+list<T> Graph<T>::bellman_ford(const T &from, const T &to) {
+
+  list<T> resList;
+
+  int i = 0;
+  list<Edge<T>> edgeList;
+  Vertex<T> *srcVtx;
+  Vertex<T> *dstVtx;
+
+  int distance[this->totalVertices];
+  Vertex<T> *previous[this->totalVertices];
+
+  for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
+    (*it)->tempIdx = i;
+
+    previous[i] = NULL;
+    if (from == (*it)->info) {
+      distance[i] = 0;
+      srcVtx = *it;
+    } else {
+      distance[i] = INT32_MAX;
+    }
+
+    if (to == (*it)->info) {
+      dstVtx = (*it);
+    }
+
+    i++;
+    for (auto it2 = (*it)->adjList.begin(); it2 != (*it)->adjList.end();
+         it2++) {
+
+      // if (this->isDirected == true ||
+      //     (this->isDirected == false && (*it) < it2->first)) {
+
+        pair<Vertex<T> *, Vertex<T> *> addr((*it), it2->first);
+        Edge<T> e((*it)->info, it2->first->info, it2->second, addr);
+        edgeList.push_back(e);
+    }
+  }
+
+  for (int i = 1; i < this->totalVertices; i++) {
+    for (auto it = edgeList.begin(); it != edgeList.end(); it++) {
+      int v_from = it->address.first->tempIdx;
+      int v_to = it->address.second->tempIdx;
+      if (distance[v_from] != INT32_MAX &&
+          ((distance[v_from] + it->dist) < distance[v_to])) {
+        distance[v_to] = distance[v_from] + it->dist;
+        previous[v_to] = it->address.first;
+      }
+    }
+  }
+
+  NegativeGraphCycle ex;
+  for (auto it = edgeList.begin(); it != edgeList.end(); it++) {
+    int v_from = it->address.first->tempIdx;
+    int v_to = it->address.second->tempIdx;
+    if (distance[v_from] != INT32_MAX &&
+        ((distance[v_from] + it->dist) < distance[v_to])) {
+      throw ex;
+    }
+  }
+
+  int j = dstVtx->tempIdx;
+
+  if (previous[j] == NULL) {
+    return {};
+  }
+
+  while (previous[j]->info != from) {
+    resList.push_front(previous[j]->info);
+    j = previous[j]->tempIdx;
+
+    if (previous[j] == NULL) {
+      return {};
+    }
+  }
+
+  resList.push_back(dstVtx->info);
+  resList.push_front(srcVtx->info);
+
+  return resList;
+}
 
 #endif

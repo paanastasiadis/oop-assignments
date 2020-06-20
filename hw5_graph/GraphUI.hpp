@@ -48,17 +48,25 @@ template <typename T> int graphUI() {
       T to(stream);
       stream >> token;
       distance = stoi(token);
-      // stream >> token;
-      // distance = atoi(stream;
+
       if (g.addEdg(from, to, distance))
         cout << "ae " << from << " " << to << " OK\n";
       else
         cout << "ae " << from << " " << to << " NOK\n";
     } else if (!option.compare("re")) {
+      getline(std::cin, line);
+      stream << line;
+      T from(stream);
+      T to(stream);
+      if (g.rmvEdg(from, to))
+        cout << "re " << from << " " << to << " OK\n";
+      else
+        cout << "re " << from << " " << to << " NOK\n";
+
 
     } else if (!option.compare("dot")) {
-      // getline(std::cin, line);
-      // stream << line;
+      getline(std::cin, line);
+      stream << line;
 
       char filename[] = "dotavl.dot";
       g.print2DotFile(filename);
@@ -113,6 +121,20 @@ template <typename T> int graphUI() {
       T to(stream);
 
       cout << "Dijkstra (" << from << " - " << to << "): ";
+      list<T> resList = g.dijkstra(from, to);
+
+      if (resList.empty()) {
+        cout << endl;
+      }
+
+      for (typename list<T>::iterator it = resList.begin(); it != resList.end();
+           it++) {
+        if (*it != resList.back()) {
+          cout << *it << ", ";
+        } else {
+          cout << *it << endl;
+        }
+      }
 
     } else if (!option.compare("bellman-ford")) {
       getline(std::cin, line);
@@ -120,13 +142,41 @@ template <typename T> int graphUI() {
       T from(stream);
       T to(stream);
 
+      list<T> resList;
       cout << "Bellman-Ford (" << from << " - " << to << "): ";
+
+      try {
+        resList = g.bellman_ford(from, to);
+
+      } catch (const NegativeGraphCycle &e) {
+        cout << "Negative Graph Cycle!" << endl;
+        continue;
+      }
+
+      if (resList.empty()) {
+        cout << endl;
+      }
+
+      for (typename list<T>::iterator it = resList.begin(); it != resList.end();
+           it++) {
+        if (*it != resList.back()) {
+          cout << *it << ", ";
+        } else {
+          cout << *it << endl;
+        }
+      }
 
     } else if (!option.compare("mst")) {
       list<Edge<T>> resList;
 
       cout << "\n--- Min Spanning Tree ---\n";
       resList = g.mst();
+
+      if (resList.empty()) {
+        cout << "This is a directed graph!" << endl;
+        continue;
+      }
+
       for (auto it = resList.begin(); it != resList.end(); it++) {
 
         cout << *it << endl;

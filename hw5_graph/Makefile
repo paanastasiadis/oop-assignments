@@ -55,5 +55,24 @@ bellman-ford3:
 	
 run: bfs1 bfs2 bfs3 dfs1 dfs2 dfs3 mst1 mst2 mst3 dijkstra1 dijkstra2 dijkstra3 dijkstra4 bellman-ford1 bellman-ford2 bellman-ford3
 
+diff:
+	diff -urN tests/bfs1.std bfs1.out
+	diff -urN tests/bfs2.std bfs2.out
+	diff -urN tests/bfs3.std bfs3.out
+	diff -urN tests/dfs1.std dfs1.out
+	diff -urN tests/dfs2.std dfs2.out
+	diff -urN tests/dfs3.std dfs3.out
+	diff -urN tests/mst1.std mst1.out
+	diff -urN tests/mst2.std mst2.out
+	diff -urN tests/mst3.std mst3.out
+	diff -urN tests/dijkstra1.std dijkstra1.out
+	diff -urN tests/dijkstra2.std dijkstra2.out
+	diff -urN tests/dijkstra3.std dijkstra3.out
+	diff -urN tests/dijkstra4.std dijkstra4.out
+	diff -urN tests/bellman-ford1.std bellman-ford1.out
+	diff -urN tests/bellman-ford2.std bellman-ford2.out
+	diff -urN tests/bellman-ford3.std bellman-ford3.out
+
+
 clean:
 	rm *.o *.dot *.png gstr gstudent gint  *.out
