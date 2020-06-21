@@ -4,12 +4,8 @@
 
 #include "NegativeGraphCycle.hpp"
 #include "UnionFind.hpp"
-#include <cstdint>
 #include <fstream>
-#include <iostream>
 #include <list>
-#include <map>
-#include <ostream>
 #include <queue>
 #include <set>
 #include <vector>
@@ -18,21 +14,28 @@ using namespace std;
 template <typename T> class Vertex {
 
 public:
-  T info;
-  int priority;
-  bool visited;
+  T info;       // stored object of vertex
+  int priority; // priority among the vertexes(insertion-in-graph order)
 
-  int tempIdx;
+  int tempIdx; // temporary index in the vertex array of the graph.
+               // NOT INITIALLY ASSIGNED, NOT A VALID VALUE AFTER A VERTEX
+               // DELETION. MUST BE CORRECTLY ASSIGNED BEFORE EVERY USE.
 
   template <typename P>
+
+  /**
+   * @brief operator < between two elements of pair(vertex, weight)
+   */
   friend bool operator<(const pair<Vertex<P> *, int> &pair1,
                         const pair<Vertex<P> *, int> &pair2) {
     return pair1.first->priority <= pair2.first->priority;
   }
 
+  // adjacency list of vertex. A set of dest vertexes or edges sorted in
+  // time-of-insertion order
   set<pair<Vertex<T> *, int>, less<pair<Vertex<T> *, int>>> adjList;
 
-  Vertex(T nodeInfo, int pr);
+  Vertex(T nodeInfo, int insPriority);
 };
 
 template <typename T> struct Edge {
@@ -40,6 +43,7 @@ template <typename T> struct Edge {
   T to;
   int dist;
 
+  // pair of pointers of the src and dst vertexes
   pair<Vertex<T> *, Vertex<T> *> address;
 
   Edge(T f, T t, int d, pair<Vertex<T> *, Vertex<T> *> addr)
@@ -70,6 +74,8 @@ template <typename T> class Graph {
 
 public:
   Graph(bool isDirectedGraph = true, int capacity = 2);
+
+  ~Graph();
   bool contains(const T &info);
   bool addVtx(const T &info);
   bool rmvVtx(const T &info);
@@ -77,7 +83,7 @@ public:
   bool rmvEdg(const T &from, const T &to);
   list<T> dfs(const T &info) const;
 
-  void recursiveDfs(list<T> *dfsList, Vertex<T> *vtx) const;
+  void recursiveDfs(list<T> *dfsList, Vertex<T> *vtx, bool *visitedArray) const;
   list<T> bfs(const T &info) const;
   list<Edge<T>> mst();
 
@@ -95,18 +101,33 @@ template <typename T> bool Edge<T>::operator>(const Edge<T> &e) const {
   return (this->dist > e.dist);
 }
 
-template <typename T> Vertex<T>::Vertex(T nodeInfo, int prio) {
+/**
+ * @brief Construct a new Vertex< T>:: Vertex object
+ */
+template <typename T> Vertex<T>::Vertex(T nodeInfo, int insPriority) {
   this->info = nodeInfo;
-  this->priority = prio;
-  this->visited = false;
+  this->priority = insPriority;
   this->tempIdx = -1;
 }
+/**
+ * @brief Construct a new Graph< T>:: Graph object
+ */
 template <typename T> Graph<T>::Graph(bool isDirectedGraph, int capacity) {
   this->isDirected = isDirectedGraph;
   this->totalVertices = 0;
   this->insertionPriority = 0;
   this->mstCost = 0;
   this->vtxArray = new vector<Vertex<T> *>;
+}
+
+/**
+ * @brief Destroy the Graph< T>:: Graph object
+ */
+template <typename T> Graph<T>::~Graph() {
+  for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
+    delete (*it);
+  }
+  delete this->vtxArray;
 }
 
 /**
@@ -131,9 +152,9 @@ template <typename T> bool Graph<T>::addVtx(const T &info) {
   }
 
   // Update graph information
-  this->totalVertices++;     // update graph size
-  this->insertionPriority++; // increase the priority ticket. Lower value ->
-                             // bigger priority
+  this->totalVertices++; // update graph size
+  // increase the priority ticket. Lower value -> bigger priority
+  this->insertionPriority++;
 
   // Add the new vertex
   Vertex<T> *vtx = new Vertex<T>(info, this->insertionPriority);
@@ -219,8 +240,9 @@ bool Graph<T>::addEdg(const T &from, const T &to, int distance) {
 
     pair<Vertex<T> *, int> edgeToAdd2(edge_src, distance);
     edge_dst->adjList.insert(edgeToAdd2);
-  } else { // if the graph is not directed, add the edge in the adjacency list
-           // of the 'dst' vertex, too.
+
+  } else { // if the graph is not directed, add the edge in the adjacency
+           // list of the 'dst' vertex, too.
     edge_src->adjList.insert(edgeToAdd);
   }
 
@@ -258,8 +280,8 @@ template <typename T> bool Graph<T>::rmvEdg(const T &from, const T &to) {
   for (auto it = edge_src->adjList.begin(); it != edge_src->adjList.end();
        it++) {
     if (it->first->info == edge_dst->info) {
-      edge_src->adjList.erase(
-          it); // erase the edge from the adjacency list of Vertex 'from'
+      // erase the edge from the adjacency list of Vertex 'from'
+      edge_src->adjList.erase(it);
       break;
     }
   }
@@ -268,8 +290,9 @@ template <typename T> bool Graph<T>::rmvEdg(const T &from, const T &to) {
     for (auto it = edge_dst->adjList.begin(); it != edge_dst->adjList.end();
          it++) {
       if (it->first->info == edge_src->info) {
-        edge_dst->adjList.erase(it); // Graph NOT directed. Also erase the edge
-                                     // from the adjacency list of Vertex 'to'
+        // Graph NOT directed. Also erase the edge
+        // from the adjacency list of Vertex 'to'
+        edge_dst->adjList.erase(it);
         break;
       }
     }
@@ -279,18 +302,20 @@ template <typename T> bool Graph<T>::rmvEdg(const T &from, const T &to) {
 }
 /**
  * @brief Depth First Search Algorithm.
- *
- * @tparam T The starting point vertex to start the traversal.
  */
 template <typename T> list<T> Graph<T>::dfs(const T &info) const {
   Vertex<T> *vtx = NULL;
+  bool visited[this->totalVertices];
 
+  int i = 0;
   for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
+    visited[i] = false;
+    (*it)->tempIdx = i;
     if ((*it)->info == info) { // found the starting point vertex
-      (*it)->visited = true;   // mark it as visited
+      visited[i] = true;       // mark it as visited
       vtx = *it;
-      break;
     }
+    i++;
   }
 
   if (vtx == NULL) {
@@ -300,13 +325,7 @@ template <typename T> list<T> Graph<T>::dfs(const T &info) const {
   list<T> *dfsList = new list<T>;
 
   // recursive function to construct the DFS list of vertexes
-  recursiveDfs(dfsList, vtx);
-
-  // mark all vertexes as not visited to reset the process for future use
-  for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
-
-    (*it)->visited = false;
-  }
+  recursiveDfs(dfsList, vtx, visited);
 
   return *dfsList;
 }
@@ -318,15 +337,16 @@ template <typename T> list<T> Graph<T>::dfs(const T &info) const {
  * @param dfsList The list with all the vertexes in DFS order
  */
 template <typename T>
-void Graph<T>::recursiveDfs(list<T> *dfsList, Vertex<T> *vtx) const {
+void Graph<T>::recursiveDfs(list<T> *dfsList, Vertex<T> *vtx,
+                            bool *visitedArray) const {
 
-  vtx->visited = true;
+  visitedArray[vtx->tempIdx] = true;
   dfsList->push_back(vtx->info);
 
   // go to all the vertexes recursively by visiting all the adjacent edges
   for (auto it = vtx->adjList.begin(); it != vtx->adjList.end(); it++) {
-    if (it->first->visited == false) {
-      recursiveDfs(dfsList, it->first);
+    if (visitedArray[it->first->tempIdx] == false) {
+      recursiveDfs(dfsList, it->first, visitedArray);
     }
   }
 }
@@ -341,14 +361,18 @@ template <typename T> list<T> Graph<T>::bfs(const T &info) const {
 
   Vertex<T> *vtx;
   queue<Vertex<T> *> pq;
+  bool visited[this->totalVertices];
 
+  int i = 0;
   for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
+    (*it)->tempIdx = i;
+    visited[i] = false;
     if ((*it)->info == info) {
-      pq.push(*it);          // add the starting vertex to the queue
-      (*it)->visited = true; // mark it as visited
+      pq.push(*it);
+      visited[i] = true; // add the starting vertex to the queue
       vtx = (*it);
-      break;
     }
+    i++;
   }
 
   if (vtx == NULL) {
@@ -357,33 +381,27 @@ template <typename T> list<T> Graph<T>::bfs(const T &info) const {
 
   list<T> bfsResultList;
 
-  // we use queue instead of priority queue because the adjacency list of all
-  // vertexes are already ordered with the insertion priority
+  // we use queue instead of priority queue because the adjacency list of
+  // all vertexes are already ordered with the insertion priority
   while (!pq.empty()) {
     vtx = pq.front();
     pq.pop();
     bfsResultList.push_back(vtx->info);
 
     for (auto it2 = vtx->adjList.begin(); it2 != vtx->adjList.end(); it2++) {
-      if (it2->first->visited == false) {
-        it2->first->visited = true;
+      if (visited[it2->first->tempIdx] == false) {
+        visited[it2->first->tempIdx] = true;
 
         pq.push(it2->first);
       }
     }
   }
-
-  // mark all vertexes as not visited to reset the process for future use
-  for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
-    (*it)->visited = false;
-  }
-
   return bfsResultList;
 }
 
 /**
- * @brief Finds the minimum spanning tree of the Graph if it is undirected. Also
- * calculates the total cost of the MST.
+ * @brief Finds the minimum spanning tree of the Graph if it is undirected.
+ * Also calculates the total cost of the MST.
  */
 template <typename T> list<Edge<T>> Graph<T>::mst() {
 
@@ -393,7 +411,7 @@ template <typename T> list<Edge<T>> Graph<T>::mst() {
   }
 
   list<Edge<T>> edgeList;
-  bool visited[this->totalVertices]; // TODO Check this for dfs and bfs
+  bool visited[this->totalVertices];
 
   int i = 0;
   for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
@@ -406,9 +424,9 @@ template <typename T> list<Edge<T>> Graph<T>::mst() {
     for (auto it2 = (*it)->adjList.begin(); it2 != (*it)->adjList.end();
          it2++) {
 
-      // because the Graph is undirected, avoid the duplicate edges by adding
-      // only the edges where the src vertex was inserted before the dst vertex
-      // in the Graph
+      // because the Graph is undirected, avoid the duplicate edges by
+      // adding only the edges where the src vertex was inserted before the
+      // dst vertex in the Graph
       if ((*it)->priority < it2->first->priority) {
         pair<Vertex<T> *, Vertex<T> *> addr((*it), it2->first);
         Edge<T> e((*it)->info, it2->first->info, it2->second, addr);
@@ -473,9 +491,9 @@ template <typename T> int Graph<T>::getMSTCost() { return this->mstCost; }
 template <typename T> void Graph<T>::print2DotFile(const char *filename) const {
   ofstream fout(filename);
   if (this->isDirected == true) {
-    fout << "digraph Trie {" << endl;
+    fout << "digraph G {" << endl;
   } else {
-    fout << "graph Trie {" << endl;
+    fout << "graph G {" << endl;
   }
 
   for (auto it = vtxArray->begin(); it != vtxArray->end(); it++) {
@@ -506,8 +524,8 @@ template <typename T> void Graph<T>::print2DotFile(const char *filename) const {
 }
 
 /**
- * @brief Dijkstra's Algorithm. Finds the shortest path from vertex 'from' to
- * vertex 'to'.
+ * @brief Dijkstra's Algorithm. Finds the shortest path from vertex 'from'
+ * to vertex 'to'.
  */
 template <typename T> list<T> Graph<T>::dijkstra(const T &from, const T &to) {
 
@@ -563,8 +581,8 @@ template <typename T> list<T> Graph<T>::dijkstra(const T &from, const T &to) {
       }
       Vertex<T> *currDstVtx = it2->first;
 
-      // update both distance info and the parents in dijkstra path when a path
-      // with lesser cost is found
+      // update both distance info and the parents in dijkstra path when a
+      // path with lesser cost is found
       if (distance[currSrcVtx->tempIdx] + weight <
           distance[currDstVtx->tempIdx]) {
         distance[currDstVtx->tempIdx] = distance[currSrcVtx->tempIdx] + weight;
@@ -596,15 +614,15 @@ template <typename T> list<T> Graph<T>::dijkstra(const T &from, const T &to) {
     }
   }
 
-  // found the inner vertexes in the path. Now add src and dst vertex
+  // found the inner vertexes in the path. Now add src and dst vertexes
   resList.push_back(dstVtx->info);
   resList.push_front(srcVtx->info);
   return resList;
 }
 
 /**
- * @brief Bellman-Ford's Algorithm. Finds the shortest path from vertex 'from'
- * to vertex 'to'.
+ * @brief Bellman-Ford's Algorithm. Finds the shortest path from vertex
+ * 'from' to vertex 'to'.
  */
 template <typename T>
 list<T> Graph<T>::bellman_ford(const T &from, const T &to) {
@@ -627,7 +645,7 @@ list<T> Graph<T>::bellman_ford(const T &from, const T &to) {
       distance[i] = 0;
       srcVtx = *it;
     } else {
-      // initialize the distance for all the other vertexes to infinity.
+      // initialize the distance of all the other vertexes to infinity.
 
       distance[i] = INT32_MAX;
     }
@@ -651,7 +669,7 @@ list<T> Graph<T>::bellman_ford(const T &from, const T &to) {
     return {};
   }
 
-  // for num of Vertexes-1 iterations
+  // for iterations -> num of Vertexes-1
   for (int i = 1; i < this->totalVertices; i++) {
     // for all the edges
     for (auto it = edgeList.begin(); it != edgeList.end(); it++) {
@@ -695,7 +713,7 @@ list<T> Graph<T>::bellman_ford(const T &from, const T &to) {
       return {};
     }
   }
-  // found the inner vertexes in the path. Now add src and dst vertex to
+  // found the inner vertexes in the path. Now add src and dst vertexes to
   // complete the list
 
   resList.push_back(dstVtx->info);

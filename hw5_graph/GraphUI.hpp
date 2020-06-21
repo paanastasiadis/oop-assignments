@@ -4,8 +4,8 @@
 #include "Graph.hpp"
 #include <iostream>
 #include <sstream>
-#include <string>
 #include <string.h>
+#include <string>
 using namespace std;
 template <typename T> int graphUI() {
 
@@ -24,6 +24,7 @@ template <typename T> int graphUI() {
     cin >> option;
 
     if (!option.compare("av")) {
+
       getline(std::cin, line);
       stream << line;
       T vtx(stream);
@@ -31,7 +32,9 @@ template <typename T> int graphUI() {
         cout << "av " << vtx << " OK\n";
       else
         cout << "av " << vtx << " NOK\n";
+
     } else if (!option.compare("rv")) {
+
       getline(std::cin, line);
       stream << line;
       T vtx(stream);
@@ -41,12 +44,13 @@ template <typename T> int graphUI() {
         cout << "rv " << vtx << " NOK\n";
 
     } else if (!option.compare("ae")) {
+
       getline(std::cin, line);
       stream << line;
 
       T from(stream);
-
       T to(stream);
+
       stream >> token;
       distance = stoi(token);
 
@@ -54,31 +58,36 @@ template <typename T> int graphUI() {
         cout << "ae " << from << " " << to << " OK\n";
       else
         cout << "ae " << from << " " << to << " NOK\n";
+
     } else if (!option.compare("re")) {
+
       getline(std::cin, line);
       stream << line;
       T from(stream);
       T to(stream);
+
       if (g.rmvEdg(from, to))
         cout << "re " << from << " " << to << " OK\n";
       else
         cout << "re " << from << " " << to << " NOK\n";
 
     } else if (!option.compare("dot")) {
+
       getline(std::cin, line);
       stream << line;
-
-      char filename[50];
-      filename[0] = '\0';
-      strcpy(filename, stream.str().c_str());
-      strcat(filename,".dot");
+      
+      string fileNameStr = stream.str().c_str();
+      char filename[fileNameStr.length()];
+      strcpy(filename,fileNameStr.c_str());
+      
       g.print2DotFile(filename);
       string str = "dot -Tpng ";
-      str = str + filename + " -o " + "bfs1.png";
+      str = str + filename + " -o " + filename + ".png";
       const char *command = str.c_str();
       system(command);
 
     } else if (!option.compare("bfs")) {
+
       getline(std::cin, line);
       stream << line;
       list<T> resList;
@@ -95,8 +104,8 @@ template <typename T> int graphUI() {
           cout << *it;
         }
       }
-
       cout << "\n-------------------------\n";
+
     } else if (!option.compare("dfs")) {
 
       getline(std::cin, line);
@@ -115,11 +124,13 @@ template <typename T> int graphUI() {
           cout << *it;
         }
       }
-
       cout << "\n-------------------------\n";
+
     } else if (!option.compare("dijkstra")) {
+
       getline(std::cin, line);
       stream << line;
+
       T from(stream);
       T to(stream);
 
@@ -140,8 +151,10 @@ template <typename T> int graphUI() {
       }
 
     } else if (!option.compare("bellman-ford")) {
+
       getline(std::cin, line);
       stream << line;
+
       T from(stream);
       T to(stream);
 
@@ -170,6 +183,7 @@ template <typename T> int graphUI() {
       }
 
     } else if (!option.compare("mst")) {
+
       list<Edge<T>> resList;
 
       cout << "\n--- Min Spanning Tree ---\n";
@@ -185,6 +199,7 @@ template <typename T> int graphUI() {
         cout << *it << endl;
       }
       cout << "MST Cost: " << g.getMSTCost() << endl;
+
     } else if (!option.compare("q")) {
       cerr << "bye bye...\n";
       return 0;

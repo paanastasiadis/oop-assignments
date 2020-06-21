@@ -24,6 +24,9 @@ UnionFind::UnionFind(int numOfVertices) {
   }
 }
 
+/**
+ * @brief find the parent set of a node in graph (Path Compression)
+ */
 int UnionFind::findParent(int nodeIndex) {
 
   if (nodeIndex != parentArray[nodeIndex]) {
@@ -32,6 +35,9 @@ int UnionFind::findParent(int nodeIndex) {
   return parentArray[nodeIndex];
 }
 
+/**
+ * @brief merge two foreign subtrees in one unique tree
+ */
 void UnionFind::merge_sets(int node1, int node2) {
   int setOfNode1 = findParent(node1);
   int setOfNode2 = findParent(node2);
