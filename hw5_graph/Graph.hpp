@@ -5,6 +5,7 @@
 #include "NegativeGraphCycle.hpp"
 #include "UnionFind.hpp"
 #include <fstream>
+#include <iostream>
 #include <list>
 #include <queue>
 #include <set>
@@ -442,7 +443,6 @@ template <typename T> list<Edge<T>> Graph<T>::mst() {
 
   i = 0;
   list<Edge<T>> resList;
-
   for (auto it = edgeList.begin(); it != edgeList.end(); it++) {
 
     int v_from = it->address.first->tempIdx; // edge src-vertex index
@@ -452,22 +452,23 @@ template <typename T> list<Edge<T>> Graph<T>::mst() {
     if (i == this->totalVertices) {
       break;
     }
-
-    if (visited[v_from] == false) {
-      visited[v_from] = true;
-      i++;
-    }
-
-    if (visited[v_to] == false) {
-      visited[v_to] = true;
-      i++;
-    }
-
     // find the sets that 'from' and 'to' vertexes belong
     int from_set = uf.findParent(v_from);
     int to_set = uf.findParent(v_to);
 
     if (from_set != to_set) {
+
+      //mark the vertexes of the added edge as visited
+
+      if (visited[v_from] == false) {
+        visited[v_from] = true;
+        i++;
+      }
+
+      if (visited[v_to] == false) {
+        visited[v_to] = true;
+        i++;
+      }
       // find the set that from vertex belongs
       resList.push_back(*it);
       // update the total weight in the mst
