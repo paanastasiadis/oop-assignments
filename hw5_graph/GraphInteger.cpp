@@ -26,6 +26,12 @@ public:
   bool operator!=(const Integer& other) const {
     return value != other.value;
   }
+  bool operator<(const Integer& other) const {
+    return value < other.value;
+  }
+  bool operator>(const Integer& other) const {
+    return value > other.value;
+  }
 };
 
 #include "Graph.hpp"

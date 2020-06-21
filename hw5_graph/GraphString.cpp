@@ -26,9 +26,14 @@ public:
   bool operator!=(const String& other) const {
     return str != other.str;
   }
+  bool operator<(const String& other) const {
+    return str < other.str;
+  }
+  bool operator>(const String& other) const {
+    return str > other.str;
+  }
 };
 
-//#include "Graph-2020.06.01.hpp"
 #include "Graph.hpp"
 #include "GraphUI.hpp"
 

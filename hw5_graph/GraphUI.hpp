@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <string.h>
 using namespace std;
 template <typename T> int graphUI() {
 
@@ -63,15 +64,17 @@ template <typename T> int graphUI() {
       else
         cout << "re " << from << " " << to << " NOK\n";
 
-
     } else if (!option.compare("dot")) {
       getline(std::cin, line);
       stream << line;
 
-      char filename[] = "dotavl.dot";
+      char filename[50];
+      filename[0] = '\0';
+      strcpy(filename, stream.str().c_str());
+      strcat(filename,".dot");
       g.print2DotFile(filename);
       string str = "dot -Tpng ";
-      str = str + filename + " -o " + "dotavl.png";
+      str = str + filename + " -o " + "bfs1.png";
       const char *command = str.c_str();
       system(command);
 

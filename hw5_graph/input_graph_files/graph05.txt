@@ -21,6 +21,7 @@ ae epsilon theta 8
 ae zeta theta 9
 ae zeta kappa 2
 ae kappa lamda 10
+dot graph
 mst
 bfs alpha
 dfs alpha

@@ -32,7 +32,6 @@ ae Nancy_Patterson 1178 Jennifer_Moore 1850 2
 ae Nancy_Patterson 1178 Mary_Jastrebski 1038 10
 ae Julie_Norton 1192 Mary_Jastrebski 1038 7
 ae Julie_Norton 1192 Lois_Patterson 1034 5
-dot dijkstra4
 dijkstra Heather_Mills 1689 Julie_Norton 1192
 dijkstra Mary_Jastrebski 1038 Lois_Patterson 1034
 dijkstra Mary_Jastrebski 1038 Nancy_Patterson 1178
